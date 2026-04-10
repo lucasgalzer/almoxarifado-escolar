@@ -8,6 +8,7 @@ const { tratarErros, rotaNaoEncontrada } = require('./middlewares/erros')
 const authRoutes = require('./routes/auth')
 const categoriasRoutes = require('./routes/categorias') 
 const produtosRoutes = require('./routes/produtos')
+const importacaoRoutes = require('./routes/importacao')
 
 const app = express()
 
@@ -31,6 +32,7 @@ app.get('/health', async (req, res) => {
 app.use('/auth', authRoutes)
 app.use('/categorias', categoriasRoutes)
 app.use('/produtos', produtosRoutes)
+app.use('/importacao', importacaoRoutes) 
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)
