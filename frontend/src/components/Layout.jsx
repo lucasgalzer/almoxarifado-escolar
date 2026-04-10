@@ -1,22 +1,24 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import useAuth from '../hooks/useAuth'
 import styles from './Layout.module.css'
 
 const menuItems = [
-  { path: '/dashboard',   label: 'Dashboard'     },
-  { path: '/produtos',    label: 'Produtos'       },
-  { path: '/pessoas',     label: 'Pessoas'        },
-  { path: '/estoque',     label: 'Estoque'        },
-  { path: '/emprestimos', label: 'Empréstimos'    },
-  { path: '/solicitacoes',label: 'Solicitações'   },
-  { path: '/manutencao',  label: 'Manutenção'     },
-  { path: '/relatorios',  label: 'Relatórios'     },
+  { path: '/dashboard',    label: '📊 Dashboard'    },
+  { path: '/produtos',     label: '📦 Produtos'      },
+  { path: '/pessoas',      label: '👤 Pessoas'       },
+  { path: '/estoque',      label: '🗂️ Estoque'       },
+  { path: '/emprestimos',  label: '🔁 Empréstimos'   },
+  { path: '/solicitacoes', label: '📬 Solicitações'  },
+  { path: '/manutencao',   label: '🔧 Manutenção'   },
+  { path: '/relatorios',   label: '📈 Relatórios'    },
 ]
 
 function Layout() {
   const navigate = useNavigate()
+  const { usuario, logout } = useAuth()
 
   function handleLogout() {
-    localStorage.removeItem('token')
+    logout()
     navigate('/login')
   }
 
@@ -42,9 +44,15 @@ function Layout() {
           ))}
         </nav>
 
-        <button className={styles.logout} onClick={handleLogout}>
-          Sair
-        </button>
+        <div className={styles.footer}>
+          <div className={styles.usuarioInfo}>
+            <span className={styles.usuarioNome}>{usuario?.nome}</span>
+            <span className={styles.usuarioPerfil}>{usuario?.perfil}</span>
+          </div>
+          <button className={styles.logout} onClick={handleLogout}>
+            Sair
+          </button>
+        </div>
       </aside>
 
       <main className={styles.main}>
