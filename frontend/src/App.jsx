@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import RotaProtegida from './routes/RotaProtegida'
+import Produtos from './pages/Produtos'
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
         }>
           <Route index element={<Navigate to="/dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="produtos" element={<div>Produtos — em breve</div>} />
+          <Route path="produtos" element={<Produtos />} />
           <Route path="pessoas" element={<div>Pessoas — em breve</div>} />
           <Route path="estoque" element={<div>Estoque — em breve</div>} />
           <Route path="emprestimos" element={<div>Empréstimos — em breve</div>} />

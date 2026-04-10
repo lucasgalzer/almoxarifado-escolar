@@ -1,0 +1,150 @@
+import { useState, useEffect } from 'react'
+import api from '../services/api'
+import styles from './Produtos.module.css'
+
+function Produtos() {
+  const [produtos, setProdutos] = useState([])
+  const [busca, setBusca] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('')
+  const [filtroStatus, setFiltroStatus] = useState('')
+  const [carregando, setCarregando] = useState(true)
+
+  useEffect(() => {
+    carregarProdutos()
+  }, [busca, filtroTipo, filtroStatus])
+
+  async function carregarProdutos() {
+    try {
+      setCarregando(true)
+      const params = {}
+      if (busca) params.busca = busca
+      if (filtroTipo) params.tipo = filtroTipo
+      if (filtroStatus) params.status = filtroStatus
+
+      const { data } = await api.get('/produtos', { params })
+      setProdutos(data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  function badgeTipo(tipo) {
+    return tipo === 'consumivel' ? styles.badgeConsumivel : styles.badgeReutilizavel
+  }
+
+  function badgeStatus(status) {
+    const mapa = {
+      disponivel: styles.badgeDisponivel,
+      indisponivel: styles.badgeIndisponivel,
+      em_manutencao: styles.badgeManutencao,
+    }
+    return mapa[status] || ''
+  }
+
+  function labelStatus(status) {
+    const mapa = {
+      disponivel: 'Disponível',
+      indisponivel: 'Indisponível',
+      em_manutencao: 'Manutenção',
+    }
+    return mapa[status] || status
+  }
+
+  return (
+    <div>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.titulo}>Produtos</h1>
+          <p className={styles.subtitulo}>{produtos.length} produto(s) encontrado(s)</p>
+        </div>
+        <button className={styles.btnNovo}>+ Novo Produto</button>
+      </div>
+
+      <div className={styles.filtros}>
+        <input
+          type="text"
+          placeholder="Buscar por nome..."
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          className={styles.inputBusca}
+        />
+
+        <select
+          value={filtroTipo}
+          onChange={e => setFiltroTipo(e.target.value)}
+          className={styles.select}
+        >
+          <option value="">Todos os tipos</option>
+          <option value="consumivel">Consumível</option>
+          <option value="reutilizavel">Reutilizável</option>
+        </select>
+
+        <select
+          value={filtroStatus}
+          onChange={e => setFiltroStatus(e.target.value)}
+          className={styles.select}
+        >
+          <option value="">Todos os status</option>
+          <option value="disponivel">Disponível</option>
+          <option value="indisponivel">Indisponível</option>
+          <option value="em_manutencao">Manutenção</option>
+        </select>
+      </div>
+
+      <div className={styles.tabela}>
+        {carregando ? (
+          <div className={styles.vazio}>Carregando...</div>
+        ) : produtos.length === 0 ? (
+          <div className={styles.vazio}>Nenhum produto encontrado.</div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Qtd. Atual</th>
+                <th>Qtd. Mínima</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {produtos.map(produto => (
+                <tr key={produto.id} className={
+                  produto.quantidade_atual <= produto.quantidade_minima
+                    ? styles.rowAlerta
+                    : ''
+                }>
+                  <td>{produto.codigo_interno}</td>
+                  <td>{produto.nome}</td>
+                  <td>
+                    <span className={`${styles.badge} ${badgeTipo(produto.tipo)}`}>
+                      {produto.tipo === 'consumivel' ? 'Consumível' : 'Reutilizável'}
+                    </span>
+                  </td>
+                  <td>{produto.categoria_nome || '—'}</td>
+                  <td>{produto.quantidade_atual}</td>
+                  <td>{produto.quantidade_minima}</td>
+                  <td>
+                    <span className={`${styles.badge} ${badgeStatus(produto.status)}`}>
+                      {labelStatus(produto.status)}
+                    </span>
+                  </td>
+                  <td>
+                    <button className={styles.btnEditar}>Editar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default Produtos

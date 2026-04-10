@@ -1,0 +1,168 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.titulo {
+  font-size: 24px;
+  color: #1a237e;
+  font-weight: 700;
+}
+
+.subtitulo {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.btnNovo {
+  padding: 10px 20px;
+  background: #1a237e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnNovo:hover {
+  background: #1565c0;
+}
+
+.filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.inputBusca {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.inputBusca:focus {
+  border-color: #1a237e;
+}
+
+.select {
+  padding: 9px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+  cursor: pointer;
+}
+
+.select:focus {
+  border-color: #1a237e;
+}
+
+.tabela {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.tabela table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela thead {
+  background: #f5f7fa;
+}
+
+.tabela th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #eee;
+}
+
+.tabela td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tabela tbody tr:hover {
+  background: #fafafa;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rowAlerta {
+  background: #fff8e1 !important;
+}
+
+.vazio {
+  padding: 40px;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badgeConsumivel {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.badgeReutilizavel {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badgeDisponivel {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badgeIndisponivel {
+  background: #fdecea;
+  color: #c62828;
+}
+
+.badgeManutencao {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.btnEditar {
+  padding: 5px 12px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnEditar:hover {
+  background: #e0e0e0;
+}
