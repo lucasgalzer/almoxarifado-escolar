@@ -1,0 +1,102 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo span {
+  font-size: 40px;
+}
+
+.logo h1 {
+  font-size: 22px;
+  color: #1a237e;
+  margin: 8px 0 4px;
+}
+
+.logo p {
+  font-size: 13px;
+  color: #888;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.campo input {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border 0.2s;
+  outline: none;
+}
+
+.campo input:focus {
+  border-color: #1a237e;
+}
+
+.campo input:disabled {
+  background: #f5f5f5;
+}
+
+.botao {
+  padding: 12px;
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+
+.botao:hover:not(:disabled) {
+  background-color: #1565c0;
+}
+
+.botao:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.erro {
+  background: #fdecea;
+  color: #c62828;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid #f5c6cb;
+}
