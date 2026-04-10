@@ -3,25 +3,35 @@ const cors = require('cors')
 require('dotenv').config()
 
 const db = require('./config/database')
+const corsOptions = require('./config/cors')
+const { tratarErros, rotaNaoEncontrada } = require('./middlewares/erros')
 const authRoutes = require('./routes/auth')
 
 const app = express()
 
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
-
-app.use('/auth', authRoutes)
 
 app.get('/health', async (req, res) => {
   try {
     await db.raw('SELECT 1')
-    res.json({ status: 'ok', banco: 'conectado', timestamp: new Date() })
+    res.json({
+      status: 'ok',
+      banco: 'conectado',
+      ambiente: process.env.NODE_ENV,
+      timestamp: new Date()
+    })
   } catch (error) {
     res.status(500).json({ status: 'erro', banco: 'desconectado', erro: error.message })
   }
 })
 
+app.use('/auth', authRoutes)
+
+app.use(rotaNaoEncontrada)
+app.use(tratarErros)
+
 const PORT = process.env.PORT || 3333
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`)
+  console.log(`Servidor rodando na porta ${PORT} em modo ${process.env.NODE_ENV}`)
 })
