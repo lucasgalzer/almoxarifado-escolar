@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import api from '../services/api'
 import styles from './ModalImportacaoCSV.module.css'
 
-function ModalImportacaoCSV({ onFechar, onImportado }) {
+function ModalImportacaoCSV({ tipo, onFechar, onImportado }) {
   const [arquivo, setArquivo] = useState(null)
   const [resultado, setResultado] = useState(null)
   const [carregando, setCarregando] = useState(false)
@@ -31,7 +31,7 @@ function ModalImportacaoCSV({ onFechar, onImportado }) {
       const formData = new FormData()
       formData.append('arquivo', arquivo)
 
-      const { data } = await api.post('/importacao/produtos', formData, {
+      const { data } = await api.post(`/importacao/${tipo || 'produtos'}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
@@ -45,44 +45,58 @@ function ModalImportacaoCSV({ onFechar, onImportado }) {
   }
 
   function baixarModelo() {
-    const conteudo = `codigo_interno,nome,tipo,unidade_medida,quantidade_atual,quantidade_minima,localizacao_fisica,descricao,observacoes
+    const modelos = {
+      pessoas: `nome_completo,matricula,email,setor,cargo,telefone
+Maria Silva,001,maria@escola.com,Coordenação,Coordenadora,(51) 99999-0001
+João Santos,002,joao@escola.com,Docente,Professor,(51) 99999-0002`,
+      produtos: `codigo_interno,nome,tipo,unidade_medida,quantidade_atual,quantidade_minima,localizacao_fisica,descricao,observacoes
 P002,Papel A4,consumivel,resma,10,2,Prateleira B1,Papel sulfite A4 500 folhas,
-P003,Tesoura,reutilizavel,un,5,1,Gaveta C2,,Tesoura escolar
-P004,Cola Bastão,consumivel,un,20,5,Prateleira B2,,`
+P003,Tesoura,reutilizavel,un,5,1,Gaveta C2,,Tesoura escolar`
+    }
 
+    const conteudo = modelos[tipo || 'produtos']
     const blob = new Blob([conteudo], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'modelo_produtos.csv'
+    a.download = `modelo_${tipo || 'produtos'}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  const infoTipo = tipo === 'pessoas'
+    ? {
+        colunas: 'nome_completo, matricula, email, setor, cargo, telefone',
+        obrigatorias: 'nome_completo',
+        extra: null
+      }
+    : {
+        colunas: 'codigo_interno, nome, tipo, unidade_medida, quantidade_atual, quantidade_minima, localizacao_fisica, descricao, observacoes',
+        obrigatorias: 'codigo_interno, nome, tipo',
+        extra: 'Valores válidos para tipo: consumivel ou reutilizavel'
+      }
 
   return (
     <div className={styles.overlay} onClick={onFechar}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.header}>
-          <h2>Importar Produtos via CSV</h2>
+          <h2>Importar {tipo === 'pessoas' ? 'Pessoas' : 'Produtos'} via CSV</h2>
           <button className={styles.btnFechar} onClick={onFechar}>✕</button>
         </div>
 
         <div className={styles.corpo}>
           <div className={styles.info}>
             <p>O arquivo CSV deve conter as colunas:</p>
-            <code>codigo_interno, nome, tipo, unidade_medida, quantidade_atual, quantidade_minima, localizacao_fisica, descricao, observacoes</code>
-            <p>Colunas obrigatórias: <strong>codigo_interno, nome, tipo</strong></p>
-            <p>Valores válidos para tipo: <strong>consumivel</strong> ou <strong>reutilizavel</strong></p>
+            <code>{infoTipo.colunas}</code>
+            <p>Colunas obrigatórias: <strong>{infoTipo.obrigatorias}</strong></p>
+            {infoTipo.extra && <p>{infoTipo.extra}</p>}
           </div>
 
           <button className={styles.btnModelo} onClick={baixarModelo}>
             ⬇ Baixar modelo CSV
           </button>
 
-          <div
-            className={styles.dropzone}
-            onClick={() => inputRef.current.click()}
-          >
+          <div className={styles.dropzone} onClick={() => inputRef.current.click()}>
             <input
               ref={inputRef}
               type="file"
@@ -101,7 +115,7 @@ P004,Cola Bastão,consumivel,un,20,5,Prateleira B2,,`
 
           {resultado && (
             <div className={resultado.erros > 0 ? styles.resultadoAlerta : styles.resultadoSucesso}>
-              <p>✅ {resultado.importados} produto(s) importado(s) com sucesso</p>
+              <p>✅ {resultado.importados} {tipo === 'pessoas' ? 'pessoa(s)' : 'produto(s)'} importado(s) com sucesso</p>
               {resultado.erros > 0 && (
                 <>
                   <p>⚠️ {resultado.erros} linha(s) com erro:</p>
