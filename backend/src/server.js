@@ -6,6 +6,7 @@ const db = require('./config/database')
 const corsOptions = require('./config/cors')
 const { tratarErros, rotaNaoEncontrada } = require('./middlewares/erros')
 const authRoutes = require('./routes/auth')
+const categoriasRoutes = require('./routes/categorias') 
 
 const app = express()
 
@@ -27,6 +28,7 @@ app.get('/health', async (req, res) => {
 })
 
 app.use('/auth', authRoutes)
+app.use('/categorias', categoriasRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)
