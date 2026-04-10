@@ -2,17 +2,12 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "src/server.js",
- "scripts": {
-  "dev": "nodemon src/server.js",
-  "start": "node src/server.js"
-},
-
-"scripts": {
-  "dev": "nodemon src/server.js",
-  "start": "node src/server.js",
-  "migrate": "knex migrate:latest",
-  "migrate:rollback": "knex migrate:rollback"
-},
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "migrate": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
