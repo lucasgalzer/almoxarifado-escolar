@@ -20,4 +20,13 @@ function autenticar(req, res, next) {
   }
 }
 
-module.exports = { autenticar }
+function autorizar(...perfisPermitidos) {
+  return function(req, res, next) {
+    if (!perfisPermitidos.includes(req.usuarioPerfil)) {
+      return res.status(403).json({ erro: 'Acesso negado' })
+    }
+    return next()
+  }
+}
+
+module.exports = { autenticar, autorizar }
