@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const multer = require('multer')
-const { importarProdutos } = require('../controllers/importacaoController')
+const { importarProdutos, importarPessoas } = require('../controllers/importacaoController')
 const { autenticar, autorizar } = require('../middlewares/auth')
 
 const upload = multer({
@@ -16,5 +16,6 @@ const upload = multer({
 })
 
 router.post('/produtos', autenticar, autorizar('admin', 'operador'), upload.single('arquivo'), importarProdutos)
+router.post('/pessoas', autenticar, autorizar('admin', 'operador'), upload.single('arquivo'), importarPessoas)
 
 module.exports = router

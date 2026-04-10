@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth')
 const categoriasRoutes = require('./routes/categorias') 
 const produtosRoutes = require('./routes/produtos')
 const importacaoRoutes = require('./routes/importacao')
+const pessoasRoutes = require('./routes/pessoas')
 
 const app = express()
 
@@ -32,7 +33,8 @@ app.get('/health', async (req, res) => {
 app.use('/auth', authRoutes)
 app.use('/categorias', categoriasRoutes)
 app.use('/produtos', produtosRoutes)
-app.use('/importacao', importacaoRoutes) 
+app.use('/importacao', importacaoRoutes)
+app.use('/pessoas', pessoasRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)

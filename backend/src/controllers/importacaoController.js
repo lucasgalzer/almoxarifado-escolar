@@ -97,4 +97,88 @@ async function importarProdutos(req, res, next) {
   }
 }
 
-module.exports = { importarProdutos }
+const COLUNAS_OBRIGATORIAS_PESSOAS = ['nome_completo']
+
+async function importarPessoas(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ erro: 'Nenhum arquivo enviado' })
+    }
+
+    const conteudo = req.file.buffer.toString('utf-8')
+    let registros
+
+    try {
+      registros = parse(conteudo, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+      })
+    } catch {
+      return res.status(400).json({ erro: 'Arquivo CSV inválido ou mal formatado' })
+    }
+
+    if (registros.length === 0) {
+      return res.status(400).json({ erro: 'Arquivo CSV está vazio' })
+    }
+
+    const colunas = Object.keys(registros[0]).map(c => c.toLowerCase())
+    const faltando = COLUNAS_OBRIGATORIAS_PESSOAS.filter(c => !colunas.includes(c))
+
+    if (faltando.length > 0) {
+      return res.status(400).json({
+        erro: `Colunas obrigatórias ausentes: ${faltando.join(', ')}`
+      })
+    }
+
+    const erros = []
+    const validos = []
+
+    for (let i = 0; i < registros.length; i++) {
+      const linha = i + 2
+      const r = registros[i]
+
+      if (!r.nome_completo) {
+        erros.push({ linha, erro: 'nome_completo é obrigatório' })
+        continue
+      }
+
+      if (r.matricula) {
+        const existe = await db('pessoas')
+          .where({ matricula: r.matricula, instituicao_id: req.instituicaoId })
+          .first()
+
+        if (existe) {
+          erros.push({ linha, erro: `matrícula "${r.matricula}" já cadastrada` })
+          continue
+        }
+      }
+
+      validos.push({
+        instituicao_id: req.instituicaoId,
+        nome_completo: r.nome_completo,
+        matricula: r.matricula || null,
+        email: r.email || null,
+        setor: r.setor || null,
+        cargo: r.cargo || null,
+        telefone: r.telefone || null,
+        ativo: true,
+      })
+    }
+
+    if (validos.length > 0) {
+      await db('pessoas').insert(validos)
+    }
+
+    return res.json({
+      importados: validos.length,
+      erros: erros.length,
+      detalhes_erros: erros,
+      mensagem: `${validos.length} pessoa(s) importada(s) com sucesso.`
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = { importarProdutos, importarPessoas }  
