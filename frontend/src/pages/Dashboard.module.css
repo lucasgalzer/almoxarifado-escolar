@@ -29,6 +29,12 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
 }
 
 .cardValor {
@@ -54,6 +60,65 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.alertaBaixo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.alertaZerado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.alertaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alertaInfo strong {
+  font-size: 14px;
+  color: #333;
+}
+
+.alertaInfo span {
+  font-size: 12px;
+  color: #888;
+}
+
+.alertaQtd {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e65100;
+}
+
+.btnEstoque {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: #1a237e;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+}
+
+.btnEstoque:hover {
+  text-decoration: underline;
 }
 
 .vazio {
