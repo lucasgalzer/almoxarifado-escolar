@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import RotaProtegida from './routes/RotaProtegida'
 import Produtos from './pages/Produtos'
 import Pessoas from './pages/Pessoas'
+import Estoque from './pages/Estoque'
 
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="produtos" element={<Produtos />} />
           <Route path="pessoas" element={<Pessoas />} />
-          <Route path="estoque" element={<div>Estoque — em breve</div>} />
+         <Route path="estoque" element={<Estoque />} />
           <Route path="emprestimos" element={<div>Empréstimos — em breve</div>} />
           <Route path="solicitacoes" element={<div>Solicitações — em breve</div>} />
           <Route path="manutencao" element={<div>Manutenção — em breve</div>} />

@@ -10,6 +10,7 @@ const categoriasRoutes = require('./routes/categorias')
 const produtosRoutes = require('./routes/produtos')
 const importacaoRoutes = require('./routes/importacao')
 const pessoasRoutes = require('./routes/pessoas')
+const estoqueRoutes = require('./routes/estoque')
 
 const app = express()
 
@@ -35,6 +36,7 @@ app.use('/categorias', categoriasRoutes)
 app.use('/produtos', produtosRoutes)
 app.use('/importacao', importacaoRoutes)
 app.use('/pessoas', pessoasRoutes)
+app.use('/estoque', estoqueRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)
