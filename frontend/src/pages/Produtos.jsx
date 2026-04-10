@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
+import ModalProduto from '../components/ModalProduto'
 import styles from './Produtos.module.css'
 
 function Produtos() {
@@ -8,6 +9,8 @@ function Produtos() {
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [modalAberto, setModalAberto] = useState(false)
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null)
 
   useEffect(() => {
     carregarProdutos()
@@ -28,6 +31,26 @@ function Produtos() {
     } finally {
       setCarregando(false)
     }
+  }
+
+  function abrirModalNovo() {
+    setProdutoSelecionado(null)
+    setModalAberto(true)
+  }
+
+  function abrirModalEditar(produto) {
+    setProdutoSelecionado(produto)
+    setModalAberto(true)
+  }
+
+  function fecharModal() {
+    setModalAberto(false)
+    setProdutoSelecionado(null)
+  }
+
+  function aoSalvar() {
+    fecharModal()
+    carregarProdutos()
   }
 
   function badgeTipo(tipo) {
@@ -59,7 +82,7 @@ function Produtos() {
           <h1 className={styles.titulo}>Produtos</h1>
           <p className={styles.subtitulo}>{produtos.length} produto(s) encontrado(s)</p>
         </div>
-        <button className={styles.btnNovo}>+ Novo Produto</button>
+        <button className={styles.btnNovo} onClick={abrirModalNovo}>+ Novo Produto</button>
       </div>
 
       <div className={styles.filtros}>
@@ -70,22 +93,12 @@ function Produtos() {
           onChange={e => setBusca(e.target.value)}
           className={styles.inputBusca}
         />
-
-        <select
-          value={filtroTipo}
-          onChange={e => setFiltroTipo(e.target.value)}
-          className={styles.select}
-        >
+        <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} className={styles.select}>
           <option value="">Todos os tipos</option>
           <option value="consumivel">Consumível</option>
           <option value="reutilizavel">Reutilizável</option>
         </select>
-
-        <select
-          value={filtroStatus}
-          onChange={e => setFiltroStatus(e.target.value)}
-          className={styles.select}
-        >
+        <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className={styles.select}>
           <option value="">Todos os status</option>
           <option value="disponivel">Disponível</option>
           <option value="indisponivel">Indisponível</option>
@@ -116,8 +129,7 @@ function Produtos() {
               {produtos.map(produto => (
                 <tr key={produto.id} className={
                   produto.quantidade_atual <= produto.quantidade_minima
-                    ? styles.rowAlerta
-                    : ''
+                    ? styles.rowAlerta : ''
                 }>
                   <td>{produto.codigo_interno}</td>
                   <td>{produto.nome}</td>
@@ -135,7 +147,9 @@ function Produtos() {
                     </span>
                   </td>
                   <td>
-                    <button className={styles.btnEditar}>Editar</button>
+                    <button className={styles.btnEditar} onClick={() => abrirModalEditar(produto)}>
+                      Editar
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -143,6 +157,14 @@ function Produtos() {
           </table>
         )}
       </div>
+
+      {modalAberto && (
+        <ModalProduto
+          produto={produtoSelecionado}
+          onFechar={fecharModal}
+          onSalvar={aoSalvar}
+        />
+      )}
     </div>
   )
 }
