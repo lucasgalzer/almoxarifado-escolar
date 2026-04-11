@@ -172,3 +172,31 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
+
+.btnExportarCSV {
+  padding: 10px 16px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnExportarCSV:hover { background: #c8e6c9; }
+
+.btnExportarPDF {
+  padding: 10px 16px;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c62828;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnExportarPDF:hover { background: #ffcdd2; }

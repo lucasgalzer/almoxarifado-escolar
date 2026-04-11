@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import api from '../services/api'
 import styles from './Relatorios.module.css'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const ABAS = [
   { id: 'estoque', label: '📦 Estoque atual' },
@@ -92,6 +94,78 @@ function Relatorios() {
     URL.revokeObjectURL(url)
   }
 
+  function exportarPDF() {
+  if (!dados) return
+
+  const doc = new jsPDF()
+  const data = new Date().toLocaleDateString('pt-BR')
+
+  const titulos = {
+    estoque: 'Relatório de Estoque Atual',
+    movimentacoes: 'Relatório de Movimentações',
+    emprestimos: 'Relatório de Empréstimos',
+    manutencoes: 'Relatório de Manutenções',
+    consumo: 'Relatório de Consumo',
+  }
+
+  doc.setFontSize(16)
+  doc.setTextColor(26, 35, 126)
+  doc.text(titulos[aba], 14, 18)
+
+  doc.setFontSize(9)
+  doc.setTextColor(100)
+  doc.text(`Gerado em ${data}`, 14, 26)
+
+  const resumoTexto = Object.entries(dados.resumo)
+    .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+    .join('   |   ')
+  doc.text(resumoTexto, 14, 33)
+
+  let head = []
+  let body = []
+
+  if (aba === 'estoque') {
+    head = [['Código', 'Nome', 'Tipo', 'Qtd. Atual', 'Qtd. Mínima', 'Localização', 'Status']]
+    body = dados.produtos.map(p => [p.codigo_interno, p.nome, p.tipo, `${p.quantidade_atual} ${p.unidade_medida}`, `${p.quantidade_minima} ${p.unidade_medida}`, p.localizacao_fisica || '—', p.status])
+  } else if (aba === 'movimentacoes') {
+    head = [['Data', 'Produto', 'Tipo', 'Quantidade', 'Motivo', 'Pessoa', 'Operador']]
+    body = dados.movimentacoes.map(m => [formatarData(m.data), m.produto_nome, m.tipo, m.quantidade, m.motivo || '—', m.pessoa_nome || '—', m.operador_nome || '—'])
+  } else if (aba === 'emprestimos') {
+    head = [['Produto', 'Pessoa', 'Setor', 'Retirada', 'Prev. Devolução', 'Status']]
+    body = dados.emprestimos.map(e => [e.produto_nome, e.pessoa_nome, e.pessoa_setor || '—', formatarData(e.data_retirada), formatarData(e.data_devolucao_prevista), e.atrasado ? 'Atrasado' : e.status])
+  } else if (aba === 'manutencoes') {
+    head = [['Produto', 'Problema', 'Fornecedor', 'Abertura', 'Custo Est.', 'Custo Real', 'Status']]
+    body = dados.manutencoes.map(m => [m.produto_nome, m.tipo_problema, m.fornecedor_tecnico || '—', formatarData(m.data_abertura), m.custo_estimado ? `R$ ${parseFloat(m.custo_estimado).toFixed(2)}` : '—', m.custo_real ? `R$ ${parseFloat(m.custo_real).toFixed(2)}` : '—', m.status])
+  } else if (aba === 'consumo') {
+    head = [['Código', 'Produto', 'Tipo', 'Setor', 'Total Consumido', 'Total Retiradas']]
+    body = dados.consumo.map(c => [c.codigo_interno, c.produto_nome, c.produto_tipo, c.setor || '—', `${c.total_consumido} ${c.unidade_medida}`, c.total_retiradas])
+  }
+
+  autoTable(doc, {
+    head,
+    body,
+    startY: 40,
+    styles: { fontSize: 8, cellPadding: 3 },
+    headStyles: { fillColor: [26, 35, 126], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [240, 244, 255] },
+    didParseCell: (data) => {
+      if (aba === 'emprestimos' && data.row.raw && data.row.raw[5] === 'Atrasado') {
+        data.cell.styles.textColor = [230, 81, 0]
+        data.cell.styles.fontStyle = 'bold'
+      }
+      if (aba === 'estoque' && data.section === 'body') {
+        const qtdAtual = parseInt(data.row.raw[3])
+        const qtdMin = parseInt(data.row.raw[4])
+        if (qtdAtual <= qtdMin) {
+          data.cell.styles.fillColor = [255, 248, 225]
+        }
+      }
+    }
+  })
+
+  doc.save(`${aba}_${new Date().toISOString().slice(0, 10)}.pdf`)
+}
+
   return (
     <div>
       <div className={styles.header}>
@@ -99,11 +173,16 @@ function Relatorios() {
           <h1 className={styles.titulo}>Relatórios</h1>
           <p className={styles.subtitulo}>Gere e exporte relatórios do sistema</p>
         </div>
-        {dados && (
-          <button className={styles.btnExportar} onClick={exportarCSV}>
-            ⬇ Exportar CSV
-          </button>
-        )}
+       {dados && (
+  <div style={{ display: 'flex', gap: '8px' }}>
+    <button className={styles.btnExportarCSV} onClick={exportarCSV}>
+      ⬇ CSV
+    </button>
+    <button className={styles.btnExportarPDF} onClick={exportarPDF}>
+      ⬇ PDF
+    </button>
+  </div>
+)}
       </div>
 
       <div className={styles.abas}>
