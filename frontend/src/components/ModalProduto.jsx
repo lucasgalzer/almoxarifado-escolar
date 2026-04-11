@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
+import { useToast } from './Toast'
 import styles from './ModalProduto.module.css'
 
 const TIPOS = [
@@ -15,6 +16,7 @@ const STATUS = [
 const UNIDADES = ['un', 'cx', 'pct', 'resma', 'litro', 'kg', 'metro']
 
 function ModalProduto({ produto, onFechar, onSalvar }) {
+  const { addToast } = useToast()
   const [categorias, setCategorias] = useState([])
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
@@ -34,7 +36,7 @@ function ModalProduto({ produto, onFechar, onSalvar }) {
   })
 
   useEffect(() => {
-    carregarCategorias()
+    api.get('/categorias').then(({ data }) => setCategorias(data)).catch(console.error)
     if (produto) {
       setForm({
         codigo_interno: produto.codigo_interno || '',
@@ -51,15 +53,6 @@ function ModalProduto({ produto, onFechar, onSalvar }) {
       })
     }
   }, [produto])
-
-  async function carregarCategorias() {
-    try {
-      const { data } = await api.get('/categorias')
-      setCategorias(data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -81,9 +74,12 @@ function ModalProduto({ produto, onFechar, onSalvar }) {
       } else {
         await api.post('/produtos', form)
       }
+      addToast(produto ? 'Produto atualizado!' : 'Produto cadastrado!', 'sucesso')
       onSalvar()
     } catch (error) {
-      setErro(error.response?.data?.erro || 'Erro ao salvar produto')
+      const msg = error.response?.data?.erro || 'Erro ao salvar produto'
+      setErro(msg)
+      addToast(msg, 'erro')
     } finally {
       setCarregando(false)
     }

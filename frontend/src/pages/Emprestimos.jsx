@@ -3,8 +3,10 @@ import api from '../services/api'
 import ModalEmprestimo from '../components/ModalEmprestimo'
 import styles from './Emprestimos.module.css'
 import ModalDevolucao from '../components/ModalDevolucao'
+import { useToast } from '../components/Toast'
 
 function Emprestimos() {
+  const { addToast } = useToast()
   const [emprestimos, setEmprestimos] = useState([])
   const [pessoas, setPessoas] = useState([])
   const [filtroStatus, setFiltroStatus] = useState('emprestado')
