@@ -14,6 +14,7 @@ const estoqueRoutes = require('./routes/estoque')
 const dashboardRoutes = require('./routes/dashboard')
 const emprestimosRoutes = require('./routes/emprestimos')
 const historicoRoutes = require('./routes/historico')
+const solicitacoesRoutes = require('./routes/solicitacoes')
 
 const app = express()
 
@@ -43,6 +44,7 @@ app.use('/estoque', estoqueRoutes)
 app.use('/dashboard', dashboardRoutes)
 app.use('/emprestimos', emprestimosRoutes)
 app.use('/historico', historicoRoutes)
+app.use('/solicitacoes', solicitacoesRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)
