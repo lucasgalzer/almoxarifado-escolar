@@ -158,3 +158,34 @@
 .btnHistorico:hover {
   background: #bbdefb;
 }
+.btnEditar {
+  padding: 6px 14px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #444;
+  white-space: nowrap;
+}
+
+.btnEditar:hover {
+  border-color: #1a237e;
+  color: #1a237e;
+  background: #f0f4ff;
+}
+
+.btnHistorico {
+  padding: 6px 14px;
+  background: #e3f2fd;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #1565c0;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btnHistorico:hover { background: #bbdefb; }

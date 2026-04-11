@@ -4,6 +4,7 @@ import ModalProduto from '../components/ModalProduto'
 import styles from './Produtos.module.css'
 import ModalImportacaoCSV from '../components/ModalImportacaoCSV'
 import ModalHistorico from '../components/ModalHistorico'
+import ModalHistoricoPessoa from '../components/ModalHistoricoPessoa'
 
 function Produtos() {
   const [produtos, setProdutos] = useState([])

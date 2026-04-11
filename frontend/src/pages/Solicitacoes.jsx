@@ -80,6 +80,21 @@ function Solicitacoes() {
         </button>
       </div>
 
+        {solicitacoes.filter(s => s.status === 'pendente').length > 0 && (
+  <div style={{
+    background: '#fff3e0',
+    border: '1px solid #ffe082',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    marginBottom: '16px',
+    fontSize: '14px',
+    color: '#e65100',
+    fontWeight: '600'
+  }}>
+    ⚠️ {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção!
+  </div>
+)}
+
       <div className={styles.filtros}>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className={styles.select}>
           <option value="">Todas</option>

@@ -3,7 +3,7 @@ import api from '../services/api'
 import ModalPessoa from '../components/ModalPessoa'
 import ModalImportacaoCSV from '../components/ModalImportacaoCSV'
 import styles from './Pessoas.module.css'
-
+import ModalHistoricoPessoa from '../components/ModalHistoricoPessoa'
 function Pessoas() {
   const [pessoas, setPessoas] = useState([])
   const [busca, setBusca] = useState('')
@@ -14,6 +14,7 @@ function Pessoas() {
   const [modalAberto, setModalAberto] = useState(false)
   const [pessoaSelecionada, setPessoaSelecionada] = useState(null)
   const [modalCSVAberto, setModalCSVAberto] = useState(false)
+  const [pessoaHistorico, setPessoaHistorico] = useState(null)
 
   useEffect(() => {
     carregarPessoas()
@@ -133,10 +134,15 @@ function Pessoas() {
                     </span>
                   </td>
                   <td>
-                    <button className={styles.btnEditar} onClick={() => abrirModalEditar(pessoa)}>
-                      Editar
-                    </button>
-                  </td>
+  <div style={{ display: 'flex', gap: '6px' }}>
+    <button className={styles.btnEditar} onClick={() => abrirModalEditar(pessoa)}>
+      ✏️ Editar
+    </button>
+    <button className={styles.btnHistorico} onClick={() => setPessoaHistorico(pessoa)}>
+      📋 Histórico
+    </button>
+  </div>
+</td>
                 </tr>
               ))}
             </tbody>
@@ -159,6 +165,12 @@ function Pessoas() {
           onImportado={carregarPessoas}
         />
       )}
+      {pessoaHistorico && (
+  <ModalHistoricoPessoa
+    pessoaId={pessoaHistorico.id}
+    onFechar={() => setPessoaHistorico(null)}
+  />
+)}
     </div>
   )
 }
