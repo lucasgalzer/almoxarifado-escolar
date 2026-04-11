@@ -11,6 +11,7 @@ const menuItems = [
   { path: '/solicitacoes', label: '📬 Solicitações'  },
   { path: '/manutencao',   label: '🔧 Manutenção'   },
   { path: '/relatorios',   label: '📈 Relatórios'    },
+  { path: '/configuracoes', label: '⚙️ Configurações' },
 ]
 
 function Layout() {

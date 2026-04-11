@@ -10,6 +10,7 @@ import Emprestimos from './pages/Emprestimos'
 import Solicitacoes from './pages/Solicitacoes'
 import Manutencao from './pages/Manutencao'
 import Relatorios from './pages/Relatorios'
+import Configuracoes from './pages/Configuracoes'
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path="solicitacoes" element={<Solicitacoes />} />          
           <Route path="manutencao" element={<Manutencao />} />
           <Route path="relatorios" element={<Relatorios />} />
+          <Route path="configuracoes" element={<Configuracoes />} />
 
         </Route>
       </Routes>
