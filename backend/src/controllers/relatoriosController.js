@@ -129,5 +129,87 @@ async function emprestimos(req, res, next) {
     next(error)
   }
 }
+async function manutencoes(req, res, next) {
+  try {
+    const { status, data_inicio, data_fim } = req.query
 
-module.exports = { estoqueAtual, movimentacoes, emprestimos }
+    let query = db('manutencoes as m')
+      .join('produtos as p', 'm.produto_id', 'p.id')
+      .leftJoin('usuarios as u', 'm.responsavel_id', 'u.id')
+      .where('p.instituicao_id', req.instituicaoId)
+      .select(
+        'm.id',
+        'm.status',
+        'm.tipo_problema',
+        'm.descricao_defeito',
+        'm.fornecedor_tecnico',
+        'm.data_abertura',
+        'm.data_encerramento',
+        'm.custo_estimado',
+        'm.custo_real',
+        'm.observacoes',
+        'p.nome as produto_nome',
+        'p.codigo_interno',
+        'u.nome as responsavel_nome'
+      )
+      .orderBy('m.data_abertura', 'desc')
+
+    if (status) query = query.where('m.status', status)
+    if (data_inicio) query = query.where('m.data_abertura', '>=', new Date(data_inicio))
+    if (data_fim) query = query.where('m.data_abertura', '<=', new Date(data_fim + 'T23:59:59'))
+
+    const mans = await query
+
+    const resumo = {
+      total: mans.length,
+      aguardando: mans.filter(m => m.status === 'aguardando').length,
+      em_conserto: mans.filter(m => m.status === 'em_conserto').length,
+      consertados: mans.filter(m => m.status === 'consertado').length,
+      descartados: mans.filter(m => m.status === 'descartado').length,
+      custo_total: mans.reduce((acc, m) => acc + (parseFloat(m.custo_real) || 0), 0).toFixed(2),
+    }
+
+    return res.json({ resumo, manutencoes: mans })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function consumo(req, res, next) {
+  try {
+    const { data_inicio, data_fim } = req.query
+
+    let query = db('movimentacoes_estoque as m')
+      .join('produtos as p', 'm.produto_id', 'p.id')
+      .leftJoin('pessoas as pe', 'm.pessoa_id', 'pe.id')
+      .where('p.instituicao_id', req.instituicaoId)
+      .where('m.tipo', 'saida')
+      .select(
+        'p.codigo_interno',
+        'p.nome as produto_nome',
+        'p.tipo as produto_tipo',
+        'p.unidade_medida',
+        'pe.setor',
+        db.raw('SUM(m.quantidade) as total_consumido'),
+        db.raw('COUNT(m.id) as total_retiradas')
+      )
+      .groupBy('p.id', 'p.codigo_interno', 'p.nome', 'p.tipo', 'p.unidade_medida', 'pe.setor')
+      .orderBy('total_consumido', 'desc')
+
+    if (data_inicio) query = query.where('m.created_at', '>=', new Date(data_inicio))
+    if (data_fim) query = query.where('m.created_at', '<=', new Date(data_fim + 'T23:59:59'))
+
+    const consumos = await query
+
+    const resumo = {
+      total_produtos: [...new Set(consumos.map(c => c.codigo_interno))].length,
+      total_retiradas: consumos.reduce((acc, c) => acc + parseInt(c.total_retiradas), 0),
+      total_consumido: consumos.reduce((acc, c) => acc + parseInt(c.total_consumido), 0),
+    }
+
+    return res.json({ resumo, consumo: consumos })
+  } catch (error) {
+    next(error)
+  }
+}
+module.exports = { estoqueAtual, movimentacoes, emprestimos, manutencoes, consumo }

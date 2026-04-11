@@ -6,6 +6,8 @@ const ABAS = [
   { id: 'estoque', label: '📦 Estoque atual' },
   { id: 'movimentacoes', label: '🔄 Movimentações' },
   { id: 'emprestimos', label: '🔁 Empréstimos' },
+  { id: 'manutencoes', label: '🔧 Manutenções' },
+  { id: 'consumo', label: '📊 Consumo' },
 ]
 
 function Relatorios() {
@@ -50,39 +52,33 @@ function Relatorios() {
 
   function exportarCSV() {
     if (!dados) return
-
     let linhas = []
-    let nome = ''
+    let nome = aba
 
     if (aba === 'estoque') {
-      nome = 'estoque_atual'
       linhas = [
         ['Código', 'Nome', 'Tipo', 'Categoria', 'Qtd. Atual', 'Qtd. Mínima', 'Unidade', 'Localização', 'Status'],
-        ...dados.produtos.map(p => [
-          p.codigo_interno, p.nome, p.tipo, p.categoria_nome || '',
-          p.quantidade_atual, p.quantidade_minima, p.unidade_medida,
-          p.localizacao_fisica || '', p.status
-        ])
+        ...dados.produtos.map(p => [p.codigo_interno, p.nome, p.tipo, p.categoria_nome || '', p.quantidade_atual, p.quantidade_minima, p.unidade_medida, p.localizacao_fisica || '', p.status])
       ]
     } else if (aba === 'movimentacoes') {
-      nome = 'movimentacoes'
       linhas = [
         ['Data', 'Produto', 'Código', 'Tipo', 'Quantidade', 'Motivo', 'Pessoa', 'Setor', 'Operador'],
-        ...dados.movimentacoes.map(m => [
-          formatarData(m.data), m.produto_nome, m.codigo_interno,
-          m.tipo, m.quantidade, m.motivo || '',
-          m.pessoa_nome || '', m.pessoa_setor || '', m.operador_nome || ''
-        ])
+        ...dados.movimentacoes.map(m => [formatarData(m.data), m.produto_nome, m.codigo_interno, m.tipo, m.quantidade, m.motivo || '', m.pessoa_nome || '', m.pessoa_setor || '', m.operador_nome || ''])
       ]
     } else if (aba === 'emprestimos') {
-      nome = 'emprestimos'
       linhas = [
-        ['Produto', 'Código', 'Pessoa', 'Setor', 'Retirada', 'Devolução Prevista', 'Devolução Efetiva', 'Status', 'Atrasado'],
-        ...dados.emprestimos.map(e => [
-          e.produto_nome, e.codigo_interno, e.pessoa_nome, e.pessoa_setor || '',
-          formatarData(e.data_retirada), formatarData(e.data_devolucao_prevista),
-          formatarData(e.data_devolucao_efetiva), e.status, e.atrasado ? 'Sim' : 'Não'
-        ])
+        ['Produto', 'Código', 'Pessoa', 'Setor', 'Retirada', 'Prev. Devolução', 'Devolvido em', 'Status', 'Atrasado'],
+        ...dados.emprestimos.map(e => [e.produto_nome, e.codigo_interno, e.pessoa_nome, e.pessoa_setor || '', formatarData(e.data_retirada), formatarData(e.data_devolucao_prevista), formatarData(e.data_devolucao_efetiva), e.status, e.atrasado ? 'Sim' : 'Não'])
+      ]
+    } else if (aba === 'manutencoes') {
+      linhas = [
+        ['Produto', 'Código', 'Problema', 'Fornecedor', 'Abertura', 'Encerramento', 'Custo Est.', 'Custo Real', 'Status'],
+        ...dados.manutencoes.map(m => [m.produto_nome, m.codigo_interno, m.tipo_problema, m.fornecedor_tecnico || '', formatarData(m.data_abertura), formatarData(m.data_encerramento), m.custo_estimado || '', m.custo_real || '', m.status])
+      ]
+    } else if (aba === 'consumo') {
+      linhas = [
+        ['Código', 'Produto', 'Tipo', 'Setor', 'Total Consumido', 'Unidade', 'Total Retiradas'],
+        ...dados.consumo.map(c => [c.codigo_interno, c.produto_nome, c.produto_tipo, c.setor || '', c.total_consumido, c.unidade_medida, c.total_retiradas])
       ]
     }
 
@@ -162,6 +158,19 @@ function Relatorios() {
           </div>
         )}
 
+        {aba === 'manutencoes' && (
+          <div className={styles.filtroGrupo}>
+            <label>Status</label>
+            <select name="status" value={filtros.status} onChange={handleFiltro} className={styles.select}>
+              <option value="">Todos</option>
+              <option value="aguardando">Aguardando</option>
+              <option value="em_conserto">Em conserto</option>
+              <option value="consertado">Consertado</option>
+              <option value="descartado">Descartado</option>
+            </select>
+          </div>
+        )}
+
         <button className={styles.btnGerar} onClick={gerarRelatorio} disabled={carregando}>
           {carregando ? 'Gerando...' : '🔍 Gerar relatório'}
         </button>
@@ -183,14 +192,8 @@ function Relatorios() {
               <table>
                 <thead>
                   <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Categoria</th>
-                    <th>Qtd. Atual</th>
-                    <th>Qtd. Mínima</th>
-                    <th>Localização</th>
-                    <th>Status</th>
+                    <th>Código</th><th>Nome</th><th>Tipo</th><th>Categoria</th>
+                    <th>Qtd. Atual</th><th>Qtd. Mínima</th><th>Localização</th><th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,13 +217,8 @@ function Relatorios() {
               <table>
                 <thead>
                   <tr>
-                    <th>Data</th>
-                    <th>Produto</th>
-                    <th>Tipo</th>
-                    <th>Quantidade</th>
-                    <th>Motivo</th>
-                    <th>Pessoa</th>
-                    <th>Operador</th>
+                    <th>Data</th><th>Produto</th><th>Tipo</th>
+                    <th>Quantidade</th><th>Motivo</th><th>Pessoa</th><th>Operador</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,13 +241,8 @@ function Relatorios() {
               <table>
                 <thead>
                   <tr>
-                    <th>Produto</th>
-                    <th>Pessoa</th>
-                    <th>Setor</th>
-                    <th>Retirada</th>
-                    <th>Prev. Devolução</th>
-                    <th>Devolvido em</th>
-                    <th>Status</th>
+                    <th>Produto</th><th>Pessoa</th><th>Setor</th>
+                    <th>Retirada</th><th>Prev. Devolução</th><th>Devolvido em</th><th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,6 +255,54 @@ function Relatorios() {
                       <td>{formatarData(e.data_devolucao_prevista)}</td>
                       <td>{formatarData(e.data_devolucao_efetiva)}</td>
                       <td>{e.atrasado ? '⚠ Atrasado' : e.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {aba === 'manutencoes' && (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th><th>Problema</th><th>Fornecedor</th>
+                    <th>Abertura</th><th>Encerramento</th><th>Custo Est.</th><th>Custo Real</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dados.manutencoes.map(m => (
+                    <tr key={m.id}>
+                      <td>{m.produto_nome}<br /><small style={{ color: '#888' }}>{m.codigo_interno}</small></td>
+                      <td>{m.tipo_problema}</td>
+                      <td>{m.fornecedor_tecnico || '—'}</td>
+                      <td>{formatarData(m.data_abertura)}</td>
+                      <td>{formatarData(m.data_encerramento)}</td>
+                      <td>{m.custo_estimado ? `R$ ${parseFloat(m.custo_estimado).toFixed(2)}` : '—'}</td>
+                      <td>{m.custo_real ? `R$ ${parseFloat(m.custo_real).toFixed(2)}` : '—'}</td>
+                      <td>{m.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {aba === 'consumo' && (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th><th>Produto</th><th>Tipo</th>
+                    <th>Setor</th><th>Total consumido</th><th>Total retiradas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dados.consumo.map((c, i) => (
+                    <tr key={i}>
+                      <td>{c.codigo_interno}</td>
+                      <td>{c.produto_nome}</td>
+                      <td>{c.produto_tipo === 'consumivel' ? 'Consumível' : 'Reutilizável'}</td>
+                      <td>{c.setor || '—'}</td>
+                      <td><strong>{c.total_consumido}</strong> {c.unidade_medida}</td>
+                      <td>{c.total_retiradas}</td>
                     </tr>
                   ))}
                 </tbody>
