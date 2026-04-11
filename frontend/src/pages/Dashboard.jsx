@@ -51,10 +51,35 @@ function Dashboard() {
         ))}
       </div>
 
+      {dados && (dados.emprestimos_abertos > 0 || dados.manutencoes_abertas > 0 || dados.solicitacoes_pendentes > 0) && (
+        <div className={styles.alertas} style={{ marginBottom: '16px' }}>
+          <h2 className={styles.secaoTitulo}>Pendências</h2>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {dados.emprestimos_abertos > 0 && (
+              <div onClick={() => navigate('/emprestimos')} style={{ flex: 1, background: '#e3f2fd', borderRadius: '10px', padding: '16px', textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#1565c0' }}>{dados.emprestimos_abertos}</div>
+                <div style={{ fontSize: '13px', color: '#1565c0', marginTop: '4px' }}>Empréstimos em aberto</div>
+              </div>
+            )}
+            {dados.manutencoes_abertas > 0 && (
+              <div onClick={() => navigate('/manutencao')} style={{ flex: 1, background: '#fff3e0', borderRadius: '10px', padding: '16px', textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#e65100' }}>{dados.manutencoes_abertas}</div>
+                <div style={{ fontSize: '13px', color: '#e65100', marginTop: '4px' }}>Itens em manutenção</div>
+              </div>
+            )}
+            {dados.solicitacoes_pendentes > 0 && (
+              <div onClick={() => navigate('/solicitacoes')} style={{ flex: 1, background: '#fdecea', borderRadius: '10px', padding: '16px', textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#c62828' }}>{dados.solicitacoes_pendentes}</div>
+                <div style={{ fontSize: '13px', color: '#c62828', marginTop: '4px' }}>Solicitações pendentes</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {dados && (dados.estoque_baixo > 0 || dados.estoque_zerado > 0) && (
         <div className={styles.alertas}>
           <h2 className={styles.secaoTitulo}>Alertas de estoque</h2>
-
           {dados.alertas_estoque.map(produto => (
             <div
               key={produto.codigo_interno}
@@ -72,11 +97,7 @@ function Dashboard() {
               </div>
             </div>
           ))}
-
-          <button
-            className={styles.btnEstoque}
-            onClick={() => navigate('/estoque')}
-          >
+          <button className={styles.btnEstoque} onClick={() => navigate('/estoque')}>
             Ver estoque completo →
           </button>
         </div>
