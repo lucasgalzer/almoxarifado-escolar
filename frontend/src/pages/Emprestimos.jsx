@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import ModalEmprestimo from '../components/ModalEmprestimo'
 import styles from './Emprestimos.module.css'
+import ModalDevolucao from '../components/ModalDevolucao'
 
 function Emprestimos() {
   const [emprestimos, setEmprestimos] = useState([])
@@ -11,6 +12,7 @@ function Emprestimos() {
   const [filtroSetor, setFiltroSetor] = useState('')
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
+  const [emprestimoDevolvendo, setEmprestimoDevolvendo] = useState(null)
 
   useEffect(() => {
     api.get('/pessoas', { params: { ativo: true } })
@@ -44,16 +46,9 @@ function Emprestimos() {
     : emprestimos
 
   async function handleDevolver(emprestimo) {
-    if (!confirm(`Confirmar devolução de "${emprestimo.produto_nome}"?`)) return
-    try {
-      await api.patch(`/emprestimos/${emprestimo.id}/devolver`, {
-        observacoes: 'Devolvido pelo sistema'
-      })
-      carregarEmprestimos()
-    } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao devolver')
-    }
+    setEmprestimoDevolvendo(emprestimo)
   }
+
 
   function formatarData(data) {
     if (!data) return '—'
@@ -158,11 +153,11 @@ function Emprestimos() {
                   <td>
                     {emp.status === 'emprestado' && (
                       <button
-                        className={styles.btnDevolver}
-                        onClick={() => handleDevolver(emp)}
-                      >
-                        Devolver
-                      </button>
+  className={styles.btnDevolver}
+  onClick={() => handleDevolver(emp)}
+>
+  Devolver
+</button>
                     )}
                   </td>
                 </tr>
@@ -178,6 +173,17 @@ function Emprestimos() {
           onSalvar={() => { setModalAberto(false); carregarEmprestimos() }}
         />
       )}
+
+      {emprestimoDevolvendo && (
+  <ModalDevolucao
+    emprestimo={emprestimoDevolvendo}
+    onFechar={() => setEmprestimoDevolvendo(null)}
+    onSalvar={() => {
+      setEmprestimoDevolvendo(null)
+      carregarEmprestimos()
+    }}
+  />
+)}
     </div>
   )
 }
