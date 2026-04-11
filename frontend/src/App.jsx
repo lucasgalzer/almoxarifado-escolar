@@ -7,6 +7,7 @@ import Produtos from './pages/Produtos'
 import Pessoas from './pages/Pessoas'
 import Estoque from './pages/Estoque'
 import Emprestimos from './pages/Emprestimos'
+import Solicitacoes from './pages/Solicitacoes'
 
 
 function App() {
@@ -25,8 +26,7 @@ function App() {
           <Route path="pessoas" element={<Pessoas />} />
          <Route path="estoque" element={<Estoque />} />
           <Route path="emprestimos" element={<Emprestimos />} />
-          <Route path="solicitacoes" element={<div>Solicitações — em breve</div>} />
-          <Route path="manutencao" element={<div>Manutenção — em breve</div>} />
+<Route path="solicitacoes" element={<Solicitacoes />} />          <Route path="manutencao" element={<div>Manutenção — em breve</div>} />
           <Route path="relatorios" element={<div>Relatórios — em breve</div>} />
         </Route>
       </Routes>
