@@ -5,19 +5,29 @@ import styles from './Emprestimos.module.css'
 
 function Emprestimos() {
   const [emprestimos, setEmprestimos] = useState([])
+  const [pessoas, setPessoas] = useState([])
   const [filtroStatus, setFiltroStatus] = useState('emprestado')
+  const [filtroPessoa, setFiltroPessoa] = useState('')
+  const [filtroSetor, setFiltroSetor] = useState('')
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
 
   useEffect(() => {
+    api.get('/pessoas', { params: { ativo: true } })
+      .then(({ data }) => setPessoas(data))
+      .catch(console.error)
+  }, [])
+
+  useEffect(() => {
     carregarEmprestimos()
-  }, [filtroStatus])
+  }, [filtroStatus, filtroPessoa])
 
   async function carregarEmprestimos() {
     try {
       setCarregando(true)
       const params = {}
       if (filtroStatus) params.status = filtroStatus
+      if (filtroPessoa) params.pessoa_id = filtroPessoa
       const { data } = await api.get('/emprestimos', { params })
       setEmprestimos(data)
     } catch (error) {
@@ -26,6 +36,12 @@ function Emprestimos() {
       setCarregando(false)
     }
   }
+
+  const setores = [...new Set(pessoas.map(p => p.setor).filter(Boolean))]
+
+  const emprestimosFiltrados = filtroSetor
+    ? emprestimos.filter(e => e.pessoa_setor === filtroSetor)
+    : emprestimos
 
   async function handleDevolver(emprestimo) {
     if (!confirm(`Confirmar devolução de "${emprestimo.produto_nome}"?`)) return
@@ -73,7 +89,7 @@ function Emprestimos() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.titulo}>Empréstimos</h1>
-          <p className={styles.subtitulo}>{emprestimos.length} registro(s) encontrado(s)</p>
+          <p className={styles.subtitulo}>{emprestimosFiltrados.length} registro(s) encontrado(s)</p>
         </div>
         <button className={styles.btnNovo} onClick={() => setModalAberto(true)}>
           + Novo Empréstimo
@@ -82,18 +98,32 @@ function Emprestimos() {
 
       <div className={styles.filtros}>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className={styles.select}>
-          <option value="">Todos</option>
+          <option value="">Todos os status</option>
           <option value="emprestado">Em aberto</option>
           <option value="devolvido">Devolvidos</option>
           <option value="perdido">Perdidos</option>
           <option value="danificado">Danificados</option>
+        </select>
+
+        <select value={filtroPessoa} onChange={e => setFiltroPessoa(e.target.value)} className={styles.select}>
+          <option value="">Todas as pessoas</option>
+          {pessoas.map(p => (
+            <option key={p.id} value={p.id}>{p.nome_completo}</option>
+          ))}
+        </select>
+
+        <select value={filtroSetor} onChange={e => setFiltroSetor(e.target.value)} className={styles.select}>
+          <option value="">Todos os setores</option>
+          {setores.map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
         </select>
       </div>
 
       <div className={styles.tabela}>
         {carregando ? (
           <div className={styles.vazio}>Carregando...</div>
-        ) : emprestimos.length === 0 ? (
+        ) : emprestimosFiltrados.length === 0 ? (
           <div className={styles.vazio}>Nenhum empréstimo encontrado.</div>
         ) : (
           <table>
@@ -109,7 +139,7 @@ function Emprestimos() {
               </tr>
             </thead>
             <tbody>
-              {emprestimos.map(emp => (
+              {emprestimosFiltrados.map(emp => (
                 <tr key={emp.id} className={emp.atrasado ? styles.rowAtrasado : ''}>
                   <td>
                     <strong>{emp.produto_nome}</strong>
