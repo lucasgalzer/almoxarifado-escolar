@@ -3,6 +3,7 @@ import api from '../services/api'
 import ModalProduto from '../components/ModalProduto'
 import styles from './Produtos.module.css'
 import ModalImportacaoCSV from '../components/ModalImportacaoCSV'
+import ModalHistorico from '../components/ModalHistorico'
 
 function Produtos() {
   const [produtos, setProdutos] = useState([])
@@ -13,6 +14,7 @@ function Produtos() {
   const [modalAberto, setModalAberto] = useState(false)
   const [produtoSelecionado, setProdutoSelecionado] = useState(null)
   const [modalCSVAberto, setModalCSVAberto] = useState(false)
+  const [produtoHistorico, setProdutoHistorico] = useState(null)
 
   useEffect(() => {
     carregarProdutos()
@@ -153,17 +155,22 @@ function Produtos() {
                     {labelStatus(produto.status)}
                   </span>
                 </td>
-                <td>
-                  <button className={styles.btnEditar} onClick={() => abrirModalEditar(produto)}>
-                    Editar
-                  </button>
-                </td>
+<td>
+  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+    <button className={styles.btnEditar} onClick={() => abrirModalEditar(produto)}>
+      ✏️ Editar
+    </button>
+    <button className={styles.btnHistorico} onClick={() => setProdutoHistorico(produto)}>
+      📋 Histórico
+    </button>
+  </div>
+</td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+            </tbody>
+          </table>
+        )}
+      </div>
 
     {modalAberto && (
       <ModalProduto
@@ -179,6 +186,13 @@ function Produtos() {
         onImportado={carregarProdutos}
       />
     )}
+
+    {produtoHistorico && (
+  <ModalHistorico
+    produtoId={produtoHistorico.id}
+    onFechar={() => setProdutoHistorico(null)}
+  />
+)}
   </div>
 )
 }
