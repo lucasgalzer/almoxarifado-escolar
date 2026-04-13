@@ -1,18 +1,23 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import {
+  LayoutDashboard, Package, Users, Archive,
+  ArrowLeftRight, ClipboardList, Wrench,
+  BarChart2, Settings, LogOut, Menu, X, Box
+} from 'lucide-react'
 import useAuth from '../hooks/useAuth'
 import styles from './Layout.module.css'
 
 const menuItems = [
-  { path: '/dashboard',     label: '📊 Dashboard'    },
-  { path: '/produtos',      label: '📦 Produtos'      },
-  { path: '/pessoas',       label: '👤 Pessoas'       },
-  { path: '/estoque',       label: '🗂️ Estoque'       },
-  { path: '/emprestimos',   label: '🔁 Empréstimos'   },
-  { path: '/solicitacoes',  label: '📬 Solicitações'  },
-  { path: '/manutencao',    label: '🔧 Manutenção'    },
-  { path: '/relatorios',    label: '📈 Relatórios'    },
-  { path: '/configuracoes', label: '⚙️ Configurações' },
+  { path: '/dashboard',     label: 'Dashboard',     icon: LayoutDashboard },
+  { path: '/produtos',      label: 'Produtos',       icon: Package },
+  { path: '/pessoas',       label: 'Pessoas',        icon: Users },
+  { path: '/estoque',       label: 'Estoque',        icon: Archive },
+  { path: '/emprestimos',   label: 'Empréstimos',    icon: ArrowLeftRight },
+  { path: '/solicitacoes',  label: 'Solicitações',   icon: ClipboardList },
+  { path: '/manutencao',    label: 'Manutenção',     icon: Wrench },
+  { path: '/relatorios',    label: 'Relatórios',     icon: BarChart2 },
+  { path: '/configuracoes', label: 'Configurações',  icon: Settings },
 ]
 
 function Layout() {
@@ -25,49 +30,57 @@ function Layout() {
     navigate('/login')
   }
 
-  function fecharMenu() {
-    setMenuAberto(false)
-  }
-
   return (
     <div className={styles.container}>
       <button className={styles.menuToggle} onClick={() => setMenuAberto(!menuAberto)}>
-        ☰
+        {menuAberto ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      <div
-        className={menuAberto ? styles.overlayAberto : styles.overlay}
-        onClick={fecharMenu}
-      />
+      <div className={menuAberto ? styles.overlayAberto : styles.overlay} onClick={() => setMenuAberto(false)} />
 
       <aside className={`${styles.sidebar} ${menuAberto ? styles.sidebarAberto : ''}`}>
         <div className={styles.logo}>
-          <span>📦</span>
-          <strong>Almoxarifado</strong>
+          <div className={styles.logoIcon}>
+            <Box size={20} color="#7eb82c" />
+          </div>
+          <div>
+            <span className={styles.logoTitle}>Almoxarifado</span>
+            <span className={styles.logoSub}>Escolar</span>
+          </div>
         </div>
 
         <nav className={styles.nav}>
-          {menuItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={fecharMenu}
-              className={({ isActive }) =>
-                isActive ? `${styles.navItem} ${styles.active}` : styles.navItem
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {menuItems.map(item => {
+            const Icon = item.icon
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setMenuAberto(false)}
+                className={({ isActive }) =>
+                  isActive ? `${styles.navItem} ${styles.active}` : styles.navItem
+                }
+              >
+                <Icon size={18} className={styles.navIcon} />
+                <span>{item.label}</span>
+              </NavLink>
+            )
+          })}
         </nav>
 
         <div className={styles.footer}>
           <div className={styles.usuarioInfo}>
-            <span className={styles.usuarioNome}>{usuario?.nome}</span>
-            <span className={styles.usuarioPerfil}>{usuario?.perfil}</span>
+            <div className={styles.avatar}>
+              {usuario?.nome?.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <span className={styles.usuarioNome}>{usuario?.nome}</span>
+              <span className={styles.usuarioPerfil}>{usuario?.perfil}</span>
+            </div>
           </div>
           <button className={styles.logout} onClick={handleLogout}>
-            Sair
+            <LogOut size={16} />
+            <span>Sair</span>
           </button>
         </div>
       </aside>
