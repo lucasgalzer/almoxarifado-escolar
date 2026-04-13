@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 import ModalSolicitacao from '../components/ModalSolicitacao'
-import styles from './Solicitacoes.module.css'
 import ModalDetalhesSolicitacao from '../components/ModalDetalhesSolicitacao'
+import { useToast } from '../components/Toast'
+import styles from './Solicitacoes.module.css'
 
 function Solicitacoes() {
+  const { addToast } = useToast()
   const [solicitacoes, setSolicitacoes] = useState([])
   const [filtroStatus, setFiltroStatus] = useState('')
   const [carregando, setCarregando] = useState(true)
@@ -33,9 +35,10 @@ function Solicitacoes() {
     if (!confirm('Cancelar esta solicitação?')) return
     try {
       await api.patch(`/solicitacoes/${id}/status`, { status: 'cancelada' })
+      addToast('Solicitação cancelada', 'aviso')
       carregarSolicitacoes()
     } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao cancelar')
+      addToast(error.response?.data?.erro || 'Erro ao cancelar', 'erro')
     }
   }
 
@@ -80,20 +83,20 @@ function Solicitacoes() {
         </button>
       </div>
 
-        {solicitacoes.filter(s => s.status === 'pendente').length > 0 && (
-  <div style={{
-    background: '#fff3e0',
-    border: '1px solid #ffe082',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    fontSize: '14px',
-    color: '#e65100',
-    fontWeight: '600'
-  }}>
-    ⚠️ {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção!
-  </div>
-)}
+      {solicitacoes.filter(s => s.status === 'pendente').length > 0 && (
+        <div style={{
+          background: '#fff3e0',
+          border: '1px solid #ffe082',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          marginBottom: '16px',
+          fontSize: '14px',
+          color: '#e65100',
+          fontWeight: '600'
+        }}>
+          ⚠️ {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção!
+        </div>
+      )}
 
       <div className={styles.filtros}>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className={styles.select}>
@@ -126,17 +129,11 @@ function Solicitacoes() {
                   </span>
                 </div>
                 <div className={styles.cardAcoes}>
-                  <button
-                    className={styles.btnDetalhes}
-                    onClick={() => setSolicitacaoSelecionada(sol)}
-                  >
+                  <button className={styles.btnDetalhes} onClick={() => setSolicitacaoSelecionada(sol)}>
                     Ver detalhes
                   </button>
                   {sol.status === 'pendente' && (
-                    <button
-                      className={styles.btnCancelar}
-                      onClick={() => handleCancelar(sol.id)}
-                    >
+                    <button className={styles.btnCancelar} onClick={() => handleCancelar(sol.id)}>
                       Cancelar
                     </button>
                   )}
@@ -171,7 +168,11 @@ function Solicitacoes() {
       {modalAberto && (
         <ModalSolicitacao
           onFechar={() => setModalAberto(false)}
-          onSalvar={() => { setModalAberto(false); carregarSolicitacoes() }}
+          onSalvar={() => {
+            setModalAberto(false)
+            addToast('Solicitação enviada com sucesso!', 'sucesso')
+            carregarSolicitacoes()
+          }}
         />
       )}
 
@@ -179,7 +180,11 @@ function Solicitacoes() {
         <ModalDetalhesSolicitacao
           solicitacao={solicitacaoSelecionada}
           onFechar={() => setSolicitacaoSelecionada(null)}
-          onAtualizar={() => { setSolicitacaoSelecionada(null); carregarSolicitacoes() }}
+          onAtualizar={() => {
+            setSolicitacaoSelecionada(null)
+            addToast('Solicitação atualizada!', 'sucesso')
+            carregarSolicitacoes()
+          }}
         />
       )}
     </div>

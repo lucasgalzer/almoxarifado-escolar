@@ -1,194 +1,133 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
-import ModalSolicitacao from '../components/ModalSolicitacao'
-import ModalDetalhesSolicitacao from '../components/ModalDetalhesSolicitacao'
-import { useToast } from '../components/Toast'
+import { useToast } from './Toast'
 import styles from './ModalProduto.module.css'
 
-function Solicitacoes() {
+function ModalEmprestimo({ onFechar, onSalvar }) {
   const { addToast } = useToast()
-  const [solicitacoes, setSolicitacoes] = useState([])
-  const [filtroStatus, setFiltroStatus] = useState('')
-  const [carregando, setCarregando] = useState(true)
-  const [modalAberto, setModalAberto] = useState(false)
-  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null)
+  const [produtos, setProdutos] = useState([])
+  const [pessoas, setPessoas] = useState([])
+  const [carregando, setCarregando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const [form, setForm] = useState({
+    produto_id: '',
+    pessoa_id: '',
+    data_devolucao_prevista: '',
+    observacoes: '',
+  })
 
   useEffect(() => {
-    carregarSolicitacoes()
-  }, [filtroStatus])
+    Promise.all([
+      api.get('/produtos', { params: { tipo: 'reutilizavel', status: 'disponivel' } }),
+      api.get('/pessoas', { params: { ativo: true } })
+    ]).then(([{ data: prods }, { data: pess }]) => {
+      setProdutos(prods.filter(p => p.quantidade_atual > 0))
+      setPessoas(pess)
+    }).catch(console.error)
+  }, [])
 
-  async function carregarSolicitacoes() {
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  const produtoSelecionado = produtos.find(p => p.id === form.produto_id)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setErro('')
+
+    if (!form.produto_id) return setErro('Selecione um produto')
+    if (!form.pessoa_id) return setErro('Selecione uma pessoa')
+
+    setCarregando(true)
     try {
-      setCarregando(true)
-      const params = {}
-      if (filtroStatus) params.status = filtroStatus
-      const { data } = await api.get('/solicitacoes', { params })
-      setSolicitacoes(data)
+      await api.post('/emprestimos', form)
+      addToast('Empréstimo registrado com sucesso!', 'sucesso')
+      onSalvar()
     } catch (error) {
-      console.error(error)
+      const msg = error.response?.data?.erro || 'Erro ao registrar empréstimo'
+      setErro(msg)
+      addToast(msg, 'erro')
     } finally {
       setCarregando(false)
     }
   }
 
-  async function handleCancelar(id) {
-    if (!confirm('Cancelar esta solicitação?')) return
-    try {
-      await api.patch(`/solicitacoes/${id}/status`, { status: 'cancelada' })
-      addToast('Solicitação cancelada', 'aviso')
-      carregarSolicitacoes()
-    } catch (error) {
-      addToast(error.response?.data?.erro || 'Erro ao cancelar', 'erro')
-    }
-  }
-
-  function formatarData(data) {
-    if (!data) return '—'
-    return new Date(data).toLocaleDateString('pt-BR')
-  }
-
-  function badgeStatus(status) {
-    const mapa = {
-      pendente: styles.badgePendente,
-      aprovada: styles.badgeAprovada,
-      pronta: styles.badgePronta,
-      entregue: styles.badgeEntregue,
-      recusada: styles.badgeRecusada,
-      cancelada: styles.badgeCancelada,
-    }
-    return mapa[status] || ''
-  }
-
-  function labelStatus(status) {
-    const mapa = {
-      pendente: '⏳ Pendente',
-      aprovada: '✅ Aprovada',
-      pronta: '📦 Pronta p/ retirada',
-      entregue: '🎉 Entregue',
-      recusada: '❌ Recusada',
-      cancelada: '🚫 Cancelada',
-    }
-    return mapa[status] || status
-  }
-
   return (
-    <div>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.titulo}>Solicitações</h1>
-          <p className={styles.subtitulo}>{solicitacoes.length} solicitação(ões) encontrada(s)</p>
+    <div className={styles.overlay} onClick={onFechar}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.header}>
+          <h2>Novo Empréstimo</h2>
+          <button className={styles.btnFechar} onClick={onFechar}>✕</button>
         </div>
-        <button className={styles.btnNovo} onClick={() => setModalAberto(true)}>
-          + Nova Solicitação
-        </button>
-      </div>
 
-      {solicitacoes.filter(s => s.status === 'pendente').length > 0 && (
-        <div style={{
-          background: '#fff3e0',
-          border: '1px solid #ffe082',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          marginBottom: '16px',
-          fontSize: '14px',
-          color: '#e65100',
-          fontWeight: '600'
-        }}>
-          ⚠️ {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção!
-        </div>
-      )}
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {erro && <div className={styles.erro}>{erro}</div>}
 
-      <div className={styles.filtros}>
-        <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className={styles.select}>
-          <option value="">Todas</option>
-          <option value="pendente">Pendentes</option>
-          <option value="aprovada">Aprovadas</option>
-          <option value="pronta">Prontas para retirada</option>
-          <option value="entregue">Entregues</option>
-          <option value="recusada">Recusadas</option>
-          <option value="cancelada">Canceladas</option>
-        </select>
-      </div>
+          <div className={styles.campo}>
+            <label>Produto *</label>
+            <select name="produto_id" value={form.produto_id} onChange={handleChange}>
+              <option value="">Selecione um produto reutilizável</option>
+              {produtos.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.codigo_interno} — {p.nome} (Disponível: {p.quantidade_atual})
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <div className={styles.lista}>
-        {carregando ? (
-          <div className={styles.vazio}>Carregando...</div>
-        ) : solicitacoes.length === 0 ? (
-          <div className={styles.vazio}>Nenhuma solicitação encontrada.</div>
-        ) : (
-          solicitacoes.map(sol => (
-            <div key={sol.id} className={styles.card}>
-              <div className={styles.cardTopo}>
-                <div className={styles.cardInfo}>
-                  <span className={`${styles.badge} ${badgeStatus(sol.status)}`}>
-                    {labelStatus(sol.status)}
-                  </span>
-                  <span className={styles.cardData}>
-                    Solicitado em {formatarData(sol.created_at)}
-                    {sol.data_desejada && ` · Desejado para ${formatarData(sol.data_desejada)}`}
-                  </span>
-                </div>
-                <div className={styles.cardAcoes}>
-                  <button className={styles.btnDetalhes} onClick={() => setSolicitacaoSelecionada(sol)}>
-                    Ver detalhes
-                  </button>
-                  {sol.status === 'pendente' && (
-                    <button className={styles.btnCancelar} onClick={() => handleCancelar(sol.id)}>
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {sol.finalidade && (
-                <p className={styles.cardFinalidade}>📋 {sol.finalidade}</p>
-              )}
-
-              <div className={styles.cardItens}>
-                {sol.itens.map(item => (
-                  <span key={item.id} className={styles.itemTag}>
-                    {item.produto_nome} × {item.quantidade_solicitada} {item.unidade_medida}
-                  </span>
-                ))}
-              </div>
-
-              {sol.observacoes && (
-                <p className={styles.cardObs}>💬 {sol.observacoes}</p>
-              )}
-
-              <div className={styles.cardRodape}>
-                <span>Solicitante: {sol.solicitante_nome}</span>
-                {sol.operador_nome && <span>Operador: {sol.operador_nome}</span>}
-              </div>
+          {produtoSelecionado && (
+            <div style={{ background: '#e8f5e9', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#2e7d32' }}>
+              ✅ {produtoSelecionado.nome} — {produtoSelecionado.quantidade_atual} unidade(s) disponível(is)
+              {produtoSelecionado.localizacao_fisica && ` — ${produtoSelecionado.localizacao_fisica}`}
             </div>
-          ))
-        )}
+          )}
+
+          <div className={styles.campo}>
+            <label>Pessoa *</label>
+            <select name="pessoa_id" value={form.pessoa_id} onChange={handleChange}>
+              <option value="">Selecione uma pessoa</option>
+              {pessoas.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.nome_completo} {p.setor ? `— ${p.setor}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.campo}>
+            <label>Data de devolução prevista</label>
+            <input
+              type="datetime-local"
+              name="data_devolucao_prevista"
+              value={form.data_devolucao_prevista}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className={styles.campo}>
+            <label>Observações</label>
+            <textarea
+              name="observacoes"
+              value={form.observacoes}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Ex: Retirado para aula de artes — turma 6A"
+            />
+          </div>
+
+          <div className={styles.acoes}>
+            <button type="button" onClick={onFechar} className={styles.btnCancelar}>Cancelar</button>
+            <button type="submit" disabled={carregando} className={styles.btnSalvar}>
+              {carregando ? 'Registrando...' : 'Registrar Empréstimo'}
+            </button>
+          </div>
+        </form>
       </div>
-
-      {modalAberto && (
-        <ModalSolicitacao
-          onFechar={() => setModalAberto(false)}
-          onSalvar={() => {
-            setModalAberto(false)
-            addToast('Solicitação enviada com sucesso!', 'sucesso')
-            carregarSolicitacoes()
-          }}
-        />
-      )}
-
-      {solicitacaoSelecionada && (
-        <ModalDetalhesSolicitacao
-          solicitacao={solicitacaoSelecionada}
-          onFechar={() => setSolicitacaoSelecionada(null)}
-          onAtualizar={() => {
-            setSolicitacaoSelecionada(null)
-            addToast('Solicitação atualizada!', 'sucesso')
-            carregarSolicitacoes()
-          }}
-        />
-      )}
     </div>
   )
 }
 
-export default Solicitacoes
+export default ModalEmprestimo
