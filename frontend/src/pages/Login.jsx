@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Package, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import styles from './Login.module.css'
 
 function Login() {
@@ -19,7 +20,6 @@ function Login() {
     }
 
     setCarregando(true)
-
     try {
       const response = await fetch('http://localhost:3333/auth/login', {
         method: 'POST',
@@ -37,7 +37,6 @@ function Login() {
       localStorage.setItem('token', data.token)
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
       navigate('/dashboard')
-
     } catch {
       setErro('Não foi possível conectar ao servidor')
     } finally {
@@ -47,42 +46,93 @@ function Login() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.logo}>
-          <span>📦</span>
-          <h1>Almoxarifado</h1>
-          <p>Sistema de controle escolar</p>
+      <div className={styles.left}>
+        <div className={styles.leftContent}>
+          <div className={styles.brandIcon}>
+            <Package size={32} color="white" />
+          </div>
+          <h1 className={styles.brandTitle}>Almoxarifado<br />Escolar</h1>
+          <p className={styles.brandDesc}>
+            Controle completo de estoque, empréstimos e solicitações para sua instituição de ensino.
+          </p>
+
+          <div className={styles.features}>
+            {[
+              'Controle de estoque em tempo real',
+              'Gestão de empréstimos e devoluções',
+              'Solicitações online de materiais',
+              'Relatórios e indicadores gerenciais',
+            ].map(f => (
+              <div key={f} className={styles.feature}>
+                <div className={styles.featureDot} />
+                <span>{f}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {erro && <div className={styles.erro}>{erro}</div>}
-
-          <div className={styles.campo}>
-            <label>E-mail</label>
-            <input
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              disabled={carregando}
-            />
+      <div className={styles.right}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Bem-vindo de volta</h2>
+            <p className={styles.cardSub}>Entre com suas credenciais para acessar o sistema</p>
           </div>
 
-          <div className={styles.campo}>
-            <label>Senha</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={senha}
-              onChange={e => setSenha(e.target.value)}
-              disabled={carregando}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            {erro && (
+              <div className={styles.erro}>
+                <AlertCircle size={16} />
+                <span>{erro}</span>
+              </div>
+            )}
 
-          <button type="submit" disabled={carregando} className={styles.botao}>
-            {carregando ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
+            <div className={styles.campo}>
+              <label className={styles.label}>E-mail</label>
+              <div className={styles.inputWrapper}>
+                <Mail size={16} className={styles.inputIcon} />
+                <input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  disabled={carregando}
+                  className={styles.input}
+                />
+              </div>
+            </div>
+
+            <div className={styles.campo}>
+              <label className={styles.label}>Senha</label>
+              <div className={styles.inputWrapper}>
+                <Lock size={16} className={styles.inputIcon} />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={senha}
+                  onChange={e => setSenha(e.target.value)}
+                  disabled={carregando}
+                  className={styles.input}
+                />
+              </div>
+            </div>
+
+            <button type="submit" disabled={carregando} className={styles.botao}>
+              {carregando ? (
+                <span>Entrando...</span>
+              ) : (
+                <>
+                  <span>Entrar</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className={styles.footer}>
+            Sistema de Almoxarifado Escolar © {new Date().getFullYear()}
+          </p>
+        </div>
       </div>
     </div>
   )
