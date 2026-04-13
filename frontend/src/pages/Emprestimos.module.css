@@ -2,118 +2,113 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-}
-
-.titulo {
-  font-size: 24px;
-  color: #1a237e;
-  font-weight: 700;
-}
-
-.subtitulo {
-  font-size: 13px;
-  color: #888;
-  margin-top: 4px;
-}
-
-.btnNovo {
-  padding: 10px 20px;
-  background: #1a237e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btnNovo:hover { background: #1565c0; }
-
-.filtros {
-  display: flex;
-  gap: 12px;
   margin-bottom: 20px;
 }
 
+.titulo { font-size: 26px; font-weight: 700; color: var(--color-text); }
+.subtitulo { font-size: 13px; color: var(--color-text-muted); margin-top: 3px; }
+
+.btnNovo {
+  padding: 9px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btnNovo:hover { background: var(--color-primary-dark); }
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
 .select {
-  padding: 9px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
   outline: none;
-  background: white;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
 }
 
+.select:focus { border-color: var(--color-primary); }
+
 .tabela {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   overflow: hidden;
 }
 
-.tabela table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tabela thead { background: #f5f7fa; }
+.tabela table { width: 100%; border-collapse: collapse; }
+.tabela thead { background: var(--color-surface-alt); }
 
 .tabela th {
-  padding: 12px 16px;
+  padding: 11px 14px;
   text-align: left;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .tabela td {
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.tabela tbody tr:hover { background: #fafafa; }
 .tabela tbody tr:last-child td { border-bottom: none; }
+.tabela tbody tr:hover { background: var(--color-surface-alt); }
 
-.rowAtrasado { background: #fff8e1 !important; }
+.rowAtrasado { background: #fffbeb !important; }
 
 .vazio {
-  padding: 40px;
+  padding: 48px;
   text-align: center;
-  color: #aaa;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .badge {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
   font-weight: 600;
 }
 
-.badgeEmprestado { background: #e3f2fd; color: #1565c0; }
-.badgeDevolvido { background: #e8f5e9; color: #2e7d32; }
-.badgeAtrasado { background: #fff3e0; color: #e65100; }
-.badgePerdido { background: #fdecea; color: #c62828; }
-.badgeDanificado { background: #f3e5f5; color: #6a1b9a; }
+.badgeEmprestado { background: #eff6ff; color: #2563eb; }
+.badgeDevolvido { background: #f0fdf4; color: #16a34a; }
+.badgeAtrasado { background: #fffbeb; color: #d97706; }
+.badgePerdido { background: #fef2f2; color: #dc2626; }
+.badgeDanificado { background: #f5f3ff; color: #7c3aed; }
 
 .btnDevolver {
   padding: 5px 12px;
-  background: #e8f5e9;
-  border: 1px solid #a5d6a7;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #2e7d32;
-  cursor: pointer;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
   font-weight: 600;
-  transition: background 0.2s;
+  color: #16a34a;
+  transition: all 0.15s;
 }
 
-.btnDevolver:hover { background: #c8e6c9; }
+.btnDevolver:hover {
+  background: #dcfce7;
+  border-color: #16a34a;
+}

@@ -46,10 +46,10 @@ function Manutencao() {
 
   function labelStatus(status) {
     const mapa = {
-      aguardando: '⏳ Aguardando',
-      em_conserto: '🔧 Em conserto',
-      consertado: '✅ Consertado',
-      descartado: '🗑 Descartado',
+      aguardando: 'Aguardando',
+      em_conserto: 'Em conserto',
+      consertado: 'Consertado',
+      descartado: 'Descartado',
     }
     return mapa[status] || status
   }

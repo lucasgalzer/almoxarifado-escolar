@@ -59,18 +59,17 @@ function Solicitacoes() {
     return mapa[status] || ''
   }
 
-  function labelStatus(status) {
-    const mapa = {
-      pendente: '⏳ Pendente',
-      aprovada: '✅ Aprovada',
-      pronta: '📦 Pronta p/ retirada',
-      entregue: '🎉 Entregue',
-      recusada: '❌ Recusada',
-      cancelada: '🚫 Cancelada',
-    }
-    return mapa[status] || status
+function labelStatus(status) {
+  const mapa = {
+    pendente: 'Pendente',
+    aprovada: 'Aprovada',
+    pronta: 'Pronta p/ retirada',
+    entregue: 'Entregue',
+    recusada: 'Recusada',
+    cancelada: 'Cancelada',
   }
-
+  return mapa[status] || status
+}
   return (
     <div>
       <div className={styles.header}>

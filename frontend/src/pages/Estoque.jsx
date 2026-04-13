@@ -42,15 +42,15 @@ function Estoque() {
     return 'Normal'
   }
 
-  function labelTipo(tipo) {
-    const mapa = {
-      entrada: '⬆ Entrada',
-      saida: '⬇ Saída',
-      ajuste: '⚙ Ajuste',
-      devolucao: '↩ Devolução',
-    }
-    return mapa[tipo] || tipo
+function labelTipo(tipo) {
+  const mapa = {
+    entrada: 'Entrada',
+    saida: 'Saída',
+    ajuste: 'Ajuste',
+    devolucao: 'Devolução',
   }
+  return mapa[tipo] || tipo
+}
 
   function classeTipo(tipo) {
     const mapa = {
@@ -67,7 +67,7 @@ function Estoque() {
   }
 
   return (
-    <div>
+     <div>
       <div className={styles.header}>
         <div>
           <h1 className={styles.titulo}>Estoque</h1>

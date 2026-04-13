@@ -70,18 +70,20 @@ function Pessoas() {
 
   return (
     <div>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.titulo}>Pessoas</h1>
-          <p className={styles.subtitulo}>{pessoas.length} pessoa(s) encontrada(s)</p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
-            ⬆ Importar CSV
-          </button>
-          <button className={styles.btnNovo} onClick={abrirModalNovo}>+ Nova Pessoa</button>
-        </div>
-      </div>
+<div className={styles.header}>
+  <div>
+    <h1 className={styles.titulo}>Pessoas</h1>
+    <p className={styles.subtitulo}>{pessoas.length} pessoa(s) encontrada(s)</p>
+  </div>
+  <div className={styles.acoes}>
+    <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
+      Importar CSV
+    </button>
+    <button className={styles.btnNovo} onClick={abrirModalNovo}>
+      + Nova Pessoa
+    </button>
+  </div>
+</div>
 
       <div className={styles.filtros}>
         <input
@@ -136,10 +138,10 @@ function Pessoas() {
                   <td>
   <div style={{ display: 'flex', gap: '6px' }}>
     <button className={styles.btnEditar} onClick={() => abrirModalEditar(pessoa)}>
-      ✏️ Editar
+      Editar
     </button>
     <button className={styles.btnHistorico} onClick={() => setPessoaHistorico(pessoa)}>
-      📋 Histórico
+      Histórico
     </button>
   </div>
 </td>

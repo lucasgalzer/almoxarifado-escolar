@@ -87,12 +87,14 @@ function Produtos() {
         <h1 className={styles.titulo}>Produtos</h1>
         <p className={styles.subtitulo}>{produtos.length} produto(s) encontrado(s)</p>
       </div>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
-          ⬆ Importar CSV
-        </button>
-        <button className={styles.btnNovo} onClick={abrirModalNovo}>+ Novo Produto</button>
-      </div>
+      <div className={styles.acoes}>
+  <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
+    ↑ Importar CSV
+  </button>
+  <button className={styles.btnNovo} onClick={abrirModalNovo}>
+    + Novo Produto
+  </button>
+</div>
     </div>
 
     <div className={styles.filtros}>
@@ -159,10 +161,10 @@ function Produtos() {
 <td>
   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
     <button className={styles.btnEditar} onClick={() => abrirModalEditar(produto)}>
-      ✏️ Editar
+      Editar
     </button>
     <button className={styles.btnHistorico} onClick={() => setProdutoHistorico(produto)}>
-      📋 Histórico
+      Histórico
     </button>
   </div>
 </td>

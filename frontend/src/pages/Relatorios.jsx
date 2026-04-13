@@ -5,11 +5,11 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 const ABAS = [
-  { id: 'estoque', label: '📦 Estoque atual' },
-  { id: 'movimentacoes', label: '🔄 Movimentações' },
-  { id: 'emprestimos', label: '🔁 Empréstimos' },
-  { id: 'manutencoes', label: '🔧 Manutenções' },
-  { id: 'consumo', label: '📊 Consumo' },
+  { id: 'estoque', label: 'Estoque atual' },
+  { id: 'movimentacoes', label: 'Movimentações' },
+  { id: 'emprestimos', label: 'Empréstimos' },
+  { id: 'manutencoes', label: 'Manutenções' },
+  { id: 'consumo', label: 'Consumo' },
 ]
 
 function Relatorios() {
@@ -251,7 +251,7 @@ function Relatorios() {
         )}
 
         <button className={styles.btnGerar} onClick={gerarRelatorio} disabled={carregando}>
-          {carregando ? 'Gerando...' : '🔍 Gerar relatório'}
+          {carregando ? 'Gerando...' : ' Gerar relatório'}
         </button>
       </div>
 

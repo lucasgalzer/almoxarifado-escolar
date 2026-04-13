@@ -111,16 +111,16 @@ function Configuracoes() {
 
       <div className={styles.abas}>
         <button className={`${styles.aba} ${aba === 'categorias' ? styles.abaAtiva : ''}`} onClick={() => setAba('categorias')}>
-          🏷️ Categorias
+          Categorias
         </button>
         <button className={`${styles.aba} ${aba === 'unidades' ? styles.abaAtiva : ''}`} onClick={() => setAba('unidades')}>
-          📐 Unidades de medida
+          Unidades de medida
         </button>
         <button className={`${styles.aba} ${aba === 'estoque_minimo' ? styles.abaAtiva : ''}`} onClick={() => setAba('estoque_minimo')}>
-          ⚠️ Estoque mínimo
+          Estoque mínimo
         </button>
         <button className={`${styles.aba} ${aba === 'audit' ? styles.abaAtiva : ''}`} onClick={() => { setAba('audit'); carregarLogs() }}>
-          📋 Audit Log
+          Audit Log
         </button>
       </div>
 

@@ -69,17 +69,17 @@ function Emprestimos() {
     return mapa[emp.status] || ''
   }
 
-  function labelStatus(emp) {
-    if (emp.atrasado && emp.status === 'emprestado') return '⚠ Atrasado'
-    const mapa = {
-      emprestado: 'Emprestado',
-      devolvido: 'Devolvido',
-      atrasado: 'Atrasado',
-      perdido: 'Perdido',
-      danificado: 'Danificado',
-    }
-    return mapa[emp.status] || emp.status
+ function labelStatus(emp) {
+  if (emp.atrasado && emp.status === 'emprestado') return 'Atrasado'
+  const mapa = {
+    emprestado: 'Emprestado',
+    devolvido: 'Devolvido',
+    atrasado: 'Atrasado',
+    perdido: 'Perdido',
+    danificado: 'Danificado',
   }
+  return mapa[emp.status] || emp.status
+}
 
   return (
     <div>

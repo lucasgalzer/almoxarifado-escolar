@@ -2,66 +2,61 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-}
-
-.titulo {
-  font-size: 24px;
-  color: #1a237e;
-  font-weight: 700;
-}
-
-.subtitulo {
-  font-size: 13px;
-  color: #888;
-  margin-top: 4px;
-}
-
-.btnNovo {
-  padding: 10px 20px;
-  background: #1a237e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btnNovo:hover { background: #1565c0; }
-
-.filtros {
-  display: flex;
-  gap: 12px;
   margin-bottom: 20px;
 }
 
+.titulo { font-size: 26px; font-weight: 700; color: var(--color-text); }
+.subtitulo { font-size: 13px; color: var(--color-text-muted); margin-top: 3px; }
+
+.btnNovo {
+  padding: 9px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btnNovo:hover { background: var(--color-primary-dark); }
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 .select {
-  padding: 9px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
   outline: none;
-  background: white;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
 }
 
 .lista {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: box-shadow 0.15s;
 }
+
+.card:hover { box-shadow: var(--shadow-md); }
 
 .cardTopo {
   display: flex;
@@ -74,23 +69,20 @@
 .cardInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .cardData {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
-.cardAcoes {
-  display: flex;
-  gap: 8px;
-}
+.cardAcoes { display: flex; gap: 8px; }
 
 .cardFinalidade {
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -101,18 +93,18 @@
 }
 
 .itemTag {
-  padding: 4px 12px;
-  background: #f0f4ff;
-  border: 1px solid #c5cae9;
-  border-radius: 20px;
+  padding: 3px 10px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 99px;
   font-size: 12px;
-  color: #3949ab;
+  color: var(--color-text);
   font-weight: 500;
 }
 
 .cardObs {
-  font-size: 13px;
-  color: #888;
+  font-size: 12px;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -120,57 +112,62 @@
   display: flex;
   gap: 16px;
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-muted);
   padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border);
 }
 
 .vazio {
-  padding: 40px;
+  padding: 48px;
   text-align: center;
-  color: #aaa;
+  color: var(--color-text-muted);
   font-size: 14px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
 }
 
 .badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
   font-weight: 600;
 }
 
-.badgePendente { background: #fff3e0; color: #e65100; }
-.badgeAprovada { background: #e8f5e9; color: #2e7d32; }
-.badgePronta { background: #e3f2fd; color: #1565c0; }
-.badgeEntregue { background: #e8f5e9; color: #1b5e20; }
-.badgeRecusada { background: #fdecea; color: #c62828; }
-.badgeCancelada { background: #f5f5f5; color: #888; }
+.badgePendente { background: #fffbeb; color: #d97706; }
+.badgeAprovada { background: #f0fdf4; color: #16a34a; }
+.badgePronta { background: #eff6ff; color: #2563eb; }
+.badgeEntregue { background: #f0fdf4; color: #15803d; }
+.badgeRecusada { background: #fef2f2; color: #dc2626; }
+.badgeCancelada { background: var(--color-surface-alt); color: var(--color-text-muted); }
 
 .btnDetalhes {
-  padding: 6px 14px;
-  background: #f0f0f0;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.2s;
+  padding: 5px 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+  transition: all 0.15s;
 }
 
-.btnDetalhes:hover { background: #e0e0e0; }
+.btnDetalhes:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
 
 .btnCancelar {
-  padding: 6px 14px;
-  background: #fdecea;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #c62828;
-  cursor: pointer;
+  padding: 5px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
   font-weight: 500;
-  transition: background 0.2s;
+  color: var(--color-danger);
+  transition: all 0.15s;
 }
 
-.btnCancelar:hover { background: #ffcdd2; }
+.btnCancelar:hover { background: #fee2e2; }
