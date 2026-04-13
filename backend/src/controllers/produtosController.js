@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { registrar } = require('../utils/auditLog')
 
 async function listar(req, res, next) {
   try {
@@ -7,10 +8,7 @@ async function listar(req, res, next) {
     let query = db('produtos as p')
       .leftJoin('categorias as c', 'p.categoria_id', 'c.id')
       .where('p.instituicao_id', req.instituicaoId)
-      .select(
-        'p.*',
-        'c.nome as categoria_nome'
-      )
+      .select('p.*', 'c.nome as categoria_nome')
       .orderBy('p.nome')
 
     if (categoria_id) query = query.where('p.categoria_id', categoria_id)
@@ -79,6 +77,15 @@ async function criar(req, res, next) {
       status: 'disponivel'
     }).returning('*')
 
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: 'PRODUTO_CRIADO',
+      tabela: 'produtos',
+      registro_id: produto.id,
+      dados_depois: produto,
+    })
+
     return res.status(201).json(produto)
   } catch (error) {
     next(error)
@@ -116,6 +123,15 @@ async function atualizar(req, res, next) {
       return res.status(404).json({ erro: 'Produto não encontrado' })
     }
 
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: 'PRODUTO_ATUALIZADO',
+      tabela: 'produtos',
+      registro_id: produto.id,
+      dados_depois: produto,
+    })
+
     return res.json(produto)
   } catch (error) {
     next(error)
@@ -141,6 +157,16 @@ async function excluir(req, res, next) {
     }
 
     await db('produtos').where({ id: req.params.id }).delete()
+
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: 'PRODUTO_EXCLUIDO',
+      tabela: 'produtos',
+      registro_id: req.params.id,
+      dados_antes: produto,
+    })
+
     return res.status(204).send()
   } catch (error) {
     next(error)

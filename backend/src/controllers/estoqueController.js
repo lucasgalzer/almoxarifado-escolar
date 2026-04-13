@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { registrar } = require('../utils/auditLog')
 
 async function listarMovimentacoes(req, res, next) {
   try {
@@ -77,6 +78,16 @@ async function registrarMovimentacao(req, res, next) {
           quantidade_atual: novaQuantidade,
           updated_at: new Date()
         })
+
+      await registrar(trx, {
+        usuario_id: req.usuarioId,
+        instituicao_id: req.instituicaoId,
+        acao: `ESTOQUE_${tipo.toUpperCase()}`,
+        tabela: 'movimentacoes_estoque',
+        registro_id: produto_id,
+        dados_antes: { quantidade: produto.quantidade_atual },
+        dados_depois: { quantidade: novaQuantidade, tipo, quantidade },
+      })
     })
 
     const produtoAtualizado = await db('produtos').where({ id: produto_id }).first()

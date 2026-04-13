@@ -7,6 +7,7 @@ function Configuracoes() {
   const [categorias, setCategorias] = useState([])
   const [produtos, setProdutos] = useState([])
   const [carregando, setCarregando] = useState(false)
+  const [logs, setLogs] = useState([])
 
   const [novaCategoria, setNovaCategoria] = useState({ nome: '', descricao: '' })
   const [editandoCategoria, setEditandoCategoria] = useState(null)
@@ -18,6 +19,7 @@ function Configuracoes() {
   useEffect(() => {
     carregarCategorias()
     carregarProdutos()
+    carregarLogs()
   }, [])
 
   async function carregarCategorias() {
@@ -33,6 +35,15 @@ function Configuracoes() {
     try {
       const { data } = await api.get('/produtos')
       setProdutos(data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async function carregarLogs() {
+    try {
+      const { data } = await api.get('/audit-log')
+      setLogs(data)
     } catch (error) {
       console.error(error)
     }
@@ -107,6 +118,9 @@ function Configuracoes() {
         </button>
         <button className={`${styles.aba} ${aba === 'estoque_minimo' ? styles.abaAtiva : ''}`} onClick={() => setAba('estoque_minimo')}>
           ⚠️ Estoque mínimo
+        </button>
+        <button className={`${styles.aba} ${aba === 'audit' ? styles.abaAtiva : ''}`} onClick={() => { setAba('audit'); carregarLogs() }}>
+          📋 Audit Log
         </button>
       </div>
 
@@ -251,6 +265,60 @@ function Configuracoes() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {aba === 'audit' && (
+        <div className={styles.conteudo}>
+          <div className={styles.formBox}>
+            <h2 className={styles.secaoTitulo}>Registro de ações do sistema</h2>
+            <p style={{ fontSize: '13px', color: '#888' }}>
+              Últimas 200 ações registradas. Apenas administradores têm acesso.
+            </p>
+          </div>
+          <div className={styles.tabela}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Usuário</th>
+                  <th>Ação</th>
+                  <th>Tabela</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: '#aaa' }}>
+                      Nenhum registro ainda.
+                    </td>
+                  </tr>
+                ) : (
+                  logs.map(log => (
+                    <tr key={log.id}>
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        {new Date(log.created_at).toLocaleString('pt-BR')}
+                      </td>
+                      <td>{log.usuario_nome || '—'}</td>
+                      <td>
+                        <span style={{
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          background: '#e3f2fd',
+                          color: '#1565c0'
+                        }}>
+                          {log.acao}
+                        </span>
+                      </td>
+                      <td>{log.tabela_afetada}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

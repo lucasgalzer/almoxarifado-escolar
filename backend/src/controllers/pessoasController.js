@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { registrar } = require('../utils/auditLog')
 
 async function listar(req, res, next) {
   try {
@@ -64,6 +65,15 @@ async function criar(req, res, next) {
       ativo: true
     }).returning('*')
 
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: 'PESSOA_CRIADA',
+      tabela: 'pessoas',
+      registro_id: pessoa.id,
+      dados_depois: pessoa,
+    })
+
     return res.status(201).json(pessoa)
   } catch (error) {
     next(error)
@@ -89,6 +99,15 @@ async function atualizar(req, res, next) {
     if (!pessoa) {
       return res.status(404).json({ erro: 'Pessoa não encontrada' })
     }
+
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: 'PESSOA_ATUALIZADA',
+      tabela: 'pessoas',
+      registro_id: pessoa.id,
+      dados_depois: pessoa,
+    })
 
     return res.json(pessoa)
   } catch (error) {

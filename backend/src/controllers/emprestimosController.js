@@ -1,5 +1,9 @@
 const db = require('../config/database')
+const { registrar: registrarLog } = require('../utils/auditLog')
 
+// =========================
+// LISTAR
+// =========================
 async function listar(req, res, next) {
   try {
     const { status, pessoa_id, produto_id } = req.query
@@ -27,10 +31,13 @@ async function listar(req, res, next) {
     const emprestimos = await query
 
     const agora = new Date()
+
     const comStatus = emprestimos.map(e => ({
       ...e,
-      atrasado: e.status === 'emprestado' &&
+      atrasado:
+        e.status === 'emprestado' &&
         e.data_devolucao_prevista &&
+        !isNaN(new Date(e.data_devolucao_prevista)) &&
         new Date(e.data_devolucao_prevista) < agora
     }))
 
@@ -40,6 +47,9 @@ async function listar(req, res, next) {
   }
 }
 
+// =========================
+// BUSCAR POR ID
+// =========================
 async function buscarPorId(req, res, next) {
   try {
     const emprestimo = await db('emprestimos as e')
@@ -67,53 +77,101 @@ async function buscarPorId(req, res, next) {
   }
 }
 
-async function registrar(req, res, next) {
+// =========================
+// REGISTRAR EMPRÉSTIMO
+// =========================
+async function registrarEmprestimo(req, res, next) {
   try {
-    const { produto_id, pessoa_id, data_devolucao_prevista, observacoes } = req.body
+    const {
+      produto_id,
+      pessoa_id,
+      data_devolucao_prevista,
+      observacoes
+    } = req.body
 
     if (!produto_id) return res.status(400).json({ erro: 'Produto é obrigatório' })
     if (!pessoa_id) return res.status(400).json({ erro: 'Pessoa é obrigatória' })
+
+    // valida data
+    if (
+      data_devolucao_prevista &&
+      new Date(data_devolucao_prevista) < new Date()
+    ) {
+      return res.status(400).json({
+        erro: 'Data de devolução não pode ser no passado'
+      })
+    }
 
     const produto = await db('produtos')
       .where({ id: produto_id, instituicao_id: req.instituicaoId })
       .first()
 
-    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' })
+    if (!produto) {
+      return res.status(404).json({ erro: 'Produto não encontrado' })
+    }
 
     if (produto.tipo !== 'reutilizavel') {
-      return res.status(400).json({ erro: 'Apenas itens reutilizáveis podem ser emprestados' })
+      return res.status(400).json({
+        erro: 'Apenas itens reutilizáveis podem ser emprestados'
+      })
     }
 
     if (produto.status !== 'disponivel') {
-      return res.status(400).json({ erro: `Produto está ${produto.status} e não pode ser emprestado` })
+      return res.status(400).json({
+        erro: `Produto está ${produto.status} e não pode ser emprestado`
+      })
     }
 
     if (produto.quantidade_atual <= 0) {
-      return res.status(400).json({ erro: 'Produto sem estoque disponível' })
+      return res.status(400).json({
+        erro: 'Produto sem estoque disponível'
+      })
     }
 
     const pessoa = await db('pessoas')
-      .where({ id: pessoa_id, instituicao_id: req.instituicaoId, ativo: true })
+      .where({
+        id: pessoa_id,
+        instituicao_id: req.instituicaoId,
+        ativo: true
+      })
       .first()
 
-    if (!pessoa) return res.status(404).json({ erro: 'Pessoa não encontrada ou inativa' })
+    if (!pessoa) {
+      return res.status(404).json({
+        erro: 'Pessoa não encontrada ou inativa'
+      })
+    }
 
     const [emprestimo] = await db.transaction(async trx => {
-      const [emp] = await trx('emprestimos').insert({
-        produto_id,
-        pessoa_id,
-        operador_id: req.usuarioId,
-        status: 'emprestado',
-        data_retirada: new Date(),
-        data_devolucao_prevista: data_devolucao_prevista || null,
-        observacoes,
-      }).returning('*')
+      const [emp] = await trx('emprestimos')
+        .insert({
+          produto_id,
+          pessoa_id,
+          operador_id: req.usuarioId,
+          status: 'emprestado',
+          data_retirada: new Date(),
+          data_devolucao_prevista: data_devolucao_prevista || null,
+          observacoes
+        })
+        .returning('*')
 
-      await trx('produtos').where({ id: produto_id }).update({
-        quantidade_atual: produto.quantidade_atual - 1,
-        updated_at: new Date()
+      // log
+      await registrarLog(trx, {
+        usuario_id: req.usuarioId,
+        instituicao_id: req.instituicaoId,
+        acao: 'EMPRESTIMO_REGISTRADO',
+        tabela: 'emprestimos',
+        registro_id: emp.id,
+        dados_depois: emp
       })
 
+      // decremento seguro
+      await trx('produtos')
+        .where({ id: produto_id })
+        .decrement('quantidade_atual', 1)
+        .update({ updated_at: new Date() })
+
+      // movimentação
       await trx('movimentacoes_estoque').insert({
         produto_id,
         usuario_id: req.usuarioId,
@@ -121,7 +179,7 @@ async function registrar(req, res, next) {
         tipo: 'saida',
         quantidade: 1,
         motivo: 'Empréstimo',
-        observacoes,
+        observacoes
       })
 
       return [emp]
@@ -133,9 +191,18 @@ async function registrar(req, res, next) {
   }
 }
 
+// =========================
+// DEVOLVER
+// =========================
 async function devolver(req, res, next) {
   try {
     const { observacoes, status } = req.body
+
+    const statusPermitidos = ['devolvido', 'perdido', 'danificado']
+
+    if (status && !statusPermitidos.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido' })
+    }
 
     const emprestimo = await db('emprestimos as e')
       .join('produtos as p', 'e.produto_id', 'p.id')
@@ -156,18 +223,21 @@ async function devolver(req, res, next) {
     const devolvido = statusFinal === 'devolvido'
 
     await db.transaction(async trx => {
-      await trx('emprestimos').where({ id: req.params.id }).update({
-        status: statusFinal,
-        data_devolucao_efetiva: new Date(),
-        observacoes: observacoes || emprestimo.observacoes,
-        updated_at: new Date()
-      })
-
-      if (devolvido) {
-        await trx('produtos').where({ id: emprestimo.produto_id }).update({
-          quantidade_atual: emprestimo.quantidade_atual + 1,
+      await trx('emprestimos')
+        .where({ id: req.params.id })
+        .update({
+          status: statusFinal,
+          data_devolucao_efetiva: new Date(),
+          observacoes: observacoes || emprestimo.observacoes,
           updated_at: new Date()
         })
+
+      if (devolvido) {
+        // incremento seguro
+        await trx('produtos')
+          .where({ id: emprestimo.produto_id })
+          .increment('quantidade_atual', 1)
+          .update({ updated_at: new Date() })
 
         await trx('movimentacoes_estoque').insert({
           produto_id: emprestimo.produto_id,
@@ -176,15 +246,32 @@ async function devolver(req, res, next) {
           tipo: 'devolucao',
           quantidade: 1,
           motivo: 'Devolução de empréstimo',
-          observacoes,
+          observacoes
+        })
+
+        await registrarLog(trx, {
+          usuario_id: req.usuarioId,
+          instituicao_id: req.instituicaoId,
+          acao: 'EMPRESTIMO_DEVOLVIDO',
+          tabela: 'emprestimos',
+          registro_id: req.params.id,
+          dados_antes: { status: emprestimo.status },
+          dados_depois: { status: statusFinal }
         })
       }
     })
 
-    return res.json({ mensagem: `Item marcado como ${statusFinal} com sucesso` })
+    return res.json({
+      mensagem: `Item marcado como ${statusFinal} com sucesso`
+    })
   } catch (error) {
     next(error)
   }
 }
 
-module.exports = { listar, buscarPorId, registrar, devolver }
+module.exports = {
+  listar,
+  buscarPorId,
+  registrar: registrarEmprestimo,
+  devolver
+}

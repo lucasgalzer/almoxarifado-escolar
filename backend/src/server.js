@@ -17,6 +17,7 @@ const historicoRoutes = require('./routes/historico')
 const solicitacoesRoutes = require('./routes/solicitacoes')
 const manutencoesRoutes = require('./routes/manutencoes')
 const relatoriosRoutes = require('./routes/relatorios')
+const auditLogRoutes = require('./routes/auditLog')
 
 const app = express()
 
@@ -49,6 +50,7 @@ app.use('/historico', historicoRoutes)
 app.use('/solicitacoes', solicitacoesRoutes)
 app.use('/manutencoes', manutencoesRoutes)
 app.use('/relatorios', relatoriosRoutes)
+app.use('/audit-log', auditLogRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)

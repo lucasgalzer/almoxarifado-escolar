@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { registrar } = require('../utils/auditLog')
 
 async function listar(req, res, next) {
   try {
@@ -8,11 +9,7 @@ async function listar(req, res, next) {
       .join('usuarios as u', 's.solicitante_id', 'u.id')
       .leftJoin('usuarios as op', 's.operador_id', 'op.id')
       .where('s.instituicao_id', req.instituicaoId)
-      .select(
-        's.*',
-        'u.nome as solicitante_nome',
-        'op.nome as operador_nome'
-      )
+      .select('s.*', 'u.nome as solicitante_nome', 'op.nome as operador_nome')
       .orderBy('s.created_at', 'desc')
 
     if (status) query = query.where('s.status', status)
@@ -94,6 +91,15 @@ async function criar(req, res, next) {
         }))
       )
 
+      await registrar(trx, {
+        usuario_id: req.usuarioId,
+        instituicao_id: req.instituicaoId,
+        acao: 'SOLICITACAO_CRIADA',
+        tabela: 'solicitacoes',
+        registro_id: sol.id,
+        dados_depois: sol,
+      })
+
       return [sol]
     })
 
@@ -128,6 +134,16 @@ async function atualizarStatus(req, res, next) {
         observacoes: observacoes || solicitacao.observacoes,
         updated_at: new Date()
       }).returning('*')
+
+    await registrar(null, {
+      usuario_id: req.usuarioId,
+      instituicao_id: req.instituicaoId,
+      acao: `SOLICITACAO_${status.toUpperCase()}`,
+      tabela: 'solicitacoes',
+      registro_id: req.params.id,
+      dados_antes: { status: solicitacao.status },
+      dados_depois: { status },
+    })
 
     return res.json(atualizada)
   } catch (error) {
