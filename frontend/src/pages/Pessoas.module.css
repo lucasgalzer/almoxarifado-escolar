@@ -154,3 +154,15 @@
   border-color: var(--color-info);
   color: var(--color-info);
 }
+.btnExcluir {
+  padding: 5px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-danger);
+  transition: all 0.15s;
+}
+
+.btnExcluir:hover { background: #fee2e2; }

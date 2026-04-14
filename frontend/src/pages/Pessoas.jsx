@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import ModalPessoa from '../components/ModalPessoa'
 import ModalImportacaoCSV from '../components/ModalImportacaoCSV'
-import styles from './Pessoas.module.css'
 import ModalHistoricoPessoa from '../components/ModalHistoricoPessoa'
+import ModalConfirmacao from '../components/ModalConfirmacao'
+import { useToast } from '../components/Toast'
+import styles from './Pessoas.module.css'
+
 function Pessoas() {
+  const { addToast } = useToast()
   const [pessoas, setPessoas] = useState([])
   const [busca, setBusca] = useState('')
   const [filtroSetor, setFiltroSetor] = useState('')
@@ -15,6 +19,7 @@ function Pessoas() {
   const [pessoaSelecionada, setPessoaSelecionada] = useState(null)
   const [modalCSVAberto, setModalCSVAberto] = useState(false)
   const [pessoaHistorico, setPessoaHistorico] = useState(null)
+  const [pessoaExcluindo, setPessoaExcluindo] = useState(null)
 
   useEffect(() => {
     carregarPessoas()
@@ -28,7 +33,6 @@ function Pessoas() {
       if (busca) params.busca = busca
       if (filtroSetor) params.setor = filtroSetor
       if (filtroAtivo !== '') params.ativo = filtroAtivo
-
       const { data } = await api.get('/pessoas', { params })
       setPessoas(data)
     } catch (error) {
@@ -68,22 +72,34 @@ function Pessoas() {
     carregarSetores()
   }
 
+  async function excluirPessoa() {
+    try {
+      await api.delete(`/pessoas/${pessoaExcluindo.id}`)
+      addToast('Pessoa excluída com sucesso', 'sucesso')
+      setPessoaExcluindo(null)
+      carregarPessoas()
+    } catch (error) {
+      addToast(error.response?.data?.erro || 'Erro ao excluir', 'erro')
+      setPessoaExcluindo(null)
+    }
+  }
+
   return (
     <div>
-<div className={styles.header}>
-  <div>
-    <h1 className={styles.titulo}>Pessoas</h1>
-    <p className={styles.subtitulo}>{pessoas.length} pessoa(s) encontrada(s)</p>
-  </div>
-  <div className={styles.acoes}>
-    <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
-      Importar CSV
-    </button>
-    <button className={styles.btnNovo} onClick={abrirModalNovo}>
-      + Nova Pessoa
-    </button>
-  </div>
-</div>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.titulo}>Pessoas</h1>
+          <p className={styles.subtitulo}>{pessoas.length} pessoa(s) encontrada(s)</p>
+        </div>
+        <div className={styles.acoes}>
+          <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
+            Importar CSV
+          </button>
+          <button className={styles.btnNovo} onClick={abrirModalNovo}>
+            + Nova Pessoa
+          </button>
+        </div>
+      </div>
 
       <div className={styles.filtros}>
         <input
@@ -136,15 +152,18 @@ function Pessoas() {
                     </span>
                   </td>
                   <td>
-  <div style={{ display: 'flex', gap: '6px' }}>
-    <button className={styles.btnEditar} onClick={() => abrirModalEditar(pessoa)}>
-      Editar
-    </button>
-    <button className={styles.btnHistorico} onClick={() => setPessoaHistorico(pessoa)}>
-      Histórico
-    </button>
-  </div>
-</td>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button className={styles.btnEditar} onClick={() => abrirModalEditar(pessoa)}>
+                        Editar
+                      </button>
+                      <button className={styles.btnHistorico} onClick={() => setPessoaHistorico(pessoa)}>
+                        Histórico
+                      </button>
+                      <button className={styles.btnExcluir} onClick={() => setPessoaExcluindo(pessoa)}>
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -167,12 +186,22 @@ function Pessoas() {
           onImportado={carregarPessoas}
         />
       )}
+
       {pessoaHistorico && (
-  <ModalHistoricoPessoa
-    pessoaId={pessoaHistorico.id}
-    onFechar={() => setPessoaHistorico(null)}
-  />
-)}
+        <ModalHistoricoPessoa
+          pessoaId={pessoaHistorico.id}
+          onFechar={() => setPessoaHistorico(null)}
+        />
+      )}
+
+      {pessoaExcluindo && (
+        <ModalConfirmacao
+          titulo="Excluir pessoa"
+          mensagem={`Tem certeza que deseja excluir "${pessoaExcluindo.nome_completo}"? Esta ação não pode ser desfeita.`}
+          onConfirmar={excluirPessoa}
+          onCancelar={() => setPessoaExcluindo(null)}
+        />
+      )}
     </div>
   )
 }

@@ -123,11 +123,11 @@ function ModalHistorico({ produtoId, onFechar }) {
                         <span className={styles.cardData}>{formatarData(e.data_retirada)}</span>
                       </div>
                       <div className={styles.cardInfo}>
-                        <span>👤 {e.pessoa_nome} {e.pessoa_setor ? `— ${e.pessoa_setor}` : ''}</span>
-                        {e.data_devolucao_prevista && <span>📅 Previsto: {formatarData(e.data_devolucao_prevista)}</span>}
-                        {e.data_devolucao_efetiva && <span>✅ Devolvido: {formatarData(e.data_devolucao_efetiva)}</span>}
-                        {e.operador_nome && <span>🔑 Operador: {e.operador_nome}</span>}
-                        {e.observacoes && <span>📝 {e.observacoes}</span>}
+                        <span> {e.pessoa_nome} {e.pessoa_setor ? `— ${e.pessoa_setor}` : ''}</span>
+                        {e.data_devolucao_prevista && <span> Previsto: {formatarData(e.data_devolucao_prevista)}</span>}
+                        {e.data_devolucao_efetiva && <span> Devolvido: {formatarData(e.data_devolucao_efetiva)}</span>}
+                        {e.operador_nome && <span> Operador: {e.operador_nome}</span>}
+                        {e.observacoes && <span> {e.observacoes}</span>}
                       </div>
                     </div>
                   ))
@@ -147,11 +147,11 @@ function ModalHistorico({ produtoId, onFechar }) {
                         <span className={styles.cardData}>{formatarData(m.data_retirada)}</span>
                       </div>
                       <div className={styles.cardInfo}>
-                        <span>📦 Quantidade: <strong>{m.quantidade}</strong></span>
-                        {m.motivo && <span>📋 Motivo: {m.motivo}</span>}
-                        {m.pessoa_nome && <span>👤 Pessoa: {m.pessoa_nome}</span>}
-                        {m.operador_nome && <span>🔑 Operador: {m.operador_nome}</span>}
-                        {m.observacoes && <span>📝 {m.observacoes}</span>}
+                        <span> Quantidade: <strong>{m.quantidade}</strong></span>
+                        {m.motivo && <span> Motivo: {m.motivo}</span>}
+                        {m.pessoa_nome && <span> Pessoa: {m.pessoa_nome}</span>}
+                        {m.operador_nome && <span> Operador: {m.operador_nome}</span>}
+                        {m.observacoes && <span> {m.observacoes}</span>}
                       </div>
                     </div>
                   ))
@@ -171,12 +171,12 @@ function ModalHistorico({ produtoId, onFechar }) {
                         <span className={styles.cardData}>{formatarData(m.data_retirada)}</span>
                       </div>
                       <div className={styles.cardInfo}>
-                        {m.tipo_problema && <span>🔧 {m.tipo_problema}</span>}
-                        {m.descricao_defeito && <span>📋 {m.descricao_defeito}</span>}
-                        {m.fornecedor_tecnico && <span>🏭 {m.fornecedor_tecnico}</span>}
-                        {m.custo_real && <span>💰 Custo: R$ {m.custo_real}</span>}
-                        {m.data_encerramento && <span>✅ Encerrado: {formatarData(m.data_encerramento)}</span>}
-                        {m.operador_nome && <span>🔑 Operador: {m.operador_nome}</span>}
+                        {m.tipo_problema && <span> {m.tipo_problema}</span>}
+                        {m.descricao_defeito && <span> {m.descricao_defeito}</span>}
+                        {m.fornecedor_tecnico && <span> {m.fornecedor_tecnico}</span>}
+                        {m.custo_real && <span> Custo: R$ {m.custo_real}</span>}
+                        {m.data_encerramento && <span> Encerrado: {formatarData(m.data_encerramento)}</span>}
+                        {m.operador_nome && <span> Operador: {m.operador_nome}</span>}
                       </div>
                     </div>
                   ))

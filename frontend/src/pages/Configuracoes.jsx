@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
+import ModalConfirmacao from '../components/ModalConfirmacao'
+import { useToast } from '../components/Toast'
 import styles from './Configuracoes.module.css'
 
 function Configuracoes() {
+  const { addToast } = useToast()
   const [aba, setAba] = useState('categorias')
   const [categorias, setCategorias] = useState([])
   const [produtos, setProdutos] = useState([])
@@ -12,6 +15,7 @@ function Configuracoes() {
   const [novaCategoria, setNovaCategoria] = useState({ nome: '', descricao: '' })
   const [editandoCategoria, setEditandoCategoria] = useState(null)
   const [erroCategoria, setErroCategoria] = useState('')
+  const [categoriaExcluindo, setCategoriaExcluindo] = useState(null)
 
   const [estoqueMinimoEditando, setEstoqueMinimoEditando] = useState(null)
   const [novoMinimo, setNovoMinimo] = useState('')
@@ -57,8 +61,10 @@ function Configuracoes() {
       if (editandoCategoria) {
         await api.put(`/categorias/${editandoCategoria.id}`, novaCategoria)
         setEditandoCategoria(null)
+        addToast('Categoria atualizada!', 'sucesso')
       } else {
         await api.post('/categorias', novaCategoria)
+        addToast('Categoria criada!', 'sucesso')
       }
       setNovaCategoria({ nome: '', descricao: '' })
       carregarCategorias()
@@ -69,13 +75,15 @@ function Configuracoes() {
     }
   }
 
-  async function excluirCategoria(id) {
-    if (!confirm('Excluir esta categoria?')) return
+  async function excluirCategoria() {
     try {
-      await api.delete(`/categorias/${id}`)
+      await api.delete(`/categorias/${categoriaExcluindo.id}`)
+      addToast('Categoria excluída com sucesso', 'sucesso')
+      setCategoriaExcluindo(null)
       carregarCategorias()
     } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao excluir')
+      addToast(error.response?.data?.erro || 'Erro ao excluir', 'erro')
+      setCategoriaExcluindo(null)
     }
   }
 
@@ -90,11 +98,12 @@ function Configuracoes() {
         ...produto,
         quantidade_minima: parseInt(novoMinimo)
       })
+      addToast('Estoque mínimo atualizado!', 'sucesso')
       setEstoqueMinimoEditando(null)
       setNovoMinimo('')
       carregarProdutos()
     } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao salvar')
+      addToast(error.response?.data?.erro || 'Erro ao salvar', 'erro')
     }
   }
 
@@ -169,7 +178,7 @@ function Configuracoes() {
                   </div>
                   <div className={styles.itemAcoes}>
                     <button onClick={() => editarCategoria(cat)} className={styles.btnEditar}>Editar</button>
-                    <button onClick={() => excluirCategoria(cat.id)} className={styles.btnExcluir}>Excluir</button>
+                    <button onClick={() => setCategoriaExcluindo(cat)} className={styles.btnExcluir}>Excluir</button>
                   </div>
                 </div>
               ))
@@ -182,7 +191,7 @@ function Configuracoes() {
         <div className={styles.conteudo}>
           <div className={styles.formBox}>
             <h2 className={styles.secaoTitulo}>Unidades de medida em uso</h2>
-            <p style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
               As unidades são definidas no cadastro de cada produto. As unidades abaixo estão em uso no sistema.
             </p>
           </div>
@@ -207,11 +216,10 @@ function Configuracoes() {
         <div className={styles.conteudo}>
           <div className={styles.formBox}>
             <h2 className={styles.secaoTitulo}>Estoque mínimo por produto</h2>
-            <p style={{ fontSize: '13px', color: '#888', marginBottom: '0' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '0' }}>
               Quando o estoque atingir ou ficar abaixo do mínimo, um alerta aparecerá no dashboard.
             </p>
           </div>
-
           <div className={styles.tabela}>
             <table>
               <thead>
@@ -252,14 +260,11 @@ function Configuracoes() {
                     </td>
                     <td>
                       <span className={`${styles.badge} ${p.quantidade_atual === 0 ? styles.badgeZerado : p.quantidade_atual <= p.quantidade_minima ? styles.badgeBaixo : styles.badgeOk}`}>
-                        {p.quantidade_atual === 0 ? '⚠ Zerado' : p.quantidade_atual <= p.quantidade_minima ? '⚠ Baixo' : '✓ Normal'}
+                        {p.quantidade_atual === 0 ? 'Zerado' : p.quantidade_atual <= p.quantidade_minima ? 'Baixo' : 'Normal'}
                       </span>
                     </td>
                     <td>
-                      <button
-                        onClick={() => { setEstoqueMinimoEditando(p.id); setNovoMinimo(p.quantidade_minima) }}
-                        className={styles.btnEditar}
-                      >
+                      <button onClick={() => { setEstoqueMinimoEditando(p.id); setNovoMinimo(p.quantidade_minima) }} className={styles.btnEditar}>
                         Alterar mínimo
                       </button>
                     </td>
@@ -275,7 +280,7 @@ function Configuracoes() {
         <div className={styles.conteudo}>
           <div className={styles.formBox}>
             <h2 className={styles.secaoTitulo}>Registro de ações do sistema</h2>
-            <p style={{ fontSize: '13px', color: '#888' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
               Últimas 200 ações registradas. Apenas administradores têm acesso.
             </p>
           </div>
@@ -292,7 +297,7 @@ function Configuracoes() {
               <tbody>
                 {logs.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: '#aaa' }}>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-muted)' }}>
                       Nenhum registro ainda.
                     </td>
                   </tr>
@@ -304,14 +309,7 @@ function Configuracoes() {
                       </td>
                       <td>{log.usuario_nome || '—'}</td>
                       <td>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          background: '#e3f2fd',
-                          color: '#1565c0'
-                        }}>
+                        <span className={`${styles.badge} ${styles.badgeOk}`} style={{ background: '#eff6ff', color: '#2563eb' }}>
                           {log.acao}
                         </span>
                       </td>
@@ -323,6 +321,15 @@ function Configuracoes() {
             </table>
           </div>
         </div>
+      )}
+
+      {categoriaExcluindo && (
+        <ModalConfirmacao
+          titulo="Excluir categoria"
+          mensagem={`Tem certeza que deseja excluir "${categoriaExcluindo.nome}"? Esta ação não pode ser desfeita.`}
+          onConfirmar={excluirCategoria}
+          onCancelar={() => setCategoriaExcluindo(null)}
+        />
       )}
     </div>
   )

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import ModalSolicitacao from '../components/ModalSolicitacao'
 import ModalDetalhesSolicitacao from '../components/ModalDetalhesSolicitacao'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 import { useToast } from '../components/Toast'
 import styles from './Solicitacoes.module.css'
 
@@ -12,6 +13,7 @@ function Solicitacoes() {
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null)
+  const [solicitacaoCancelando, setSolicitacaoCancelando] = useState(null)
 
   useEffect(() => {
     carregarSolicitacoes()
@@ -31,14 +33,15 @@ function Solicitacoes() {
     }
   }
 
-  async function handleCancelar(id) {
-    if (!confirm('Cancelar esta solicitação?')) return
+  async function handleCancelar() {
     try {
-      await api.patch(`/solicitacoes/${id}/status`, { status: 'cancelada' })
+      await api.patch(`/solicitacoes/${solicitacaoCancelando.id}/status`, { status: 'cancelada' })
       addToast('Solicitação cancelada', 'aviso')
+      setSolicitacaoCancelando(null)
       carregarSolicitacoes()
     } catch (error) {
       addToast(error.response?.data?.erro || 'Erro ao cancelar', 'erro')
+      setSolicitacaoCancelando(null)
     }
   }
 
@@ -59,17 +62,18 @@ function Solicitacoes() {
     return mapa[status] || ''
   }
 
-function labelStatus(status) {
-  const mapa = {
-    pendente: 'Pendente',
-    aprovada: 'Aprovada',
-    pronta: 'Pronta p/ retirada',
-    entregue: 'Entregue',
-    recusada: 'Recusada',
-    cancelada: 'Cancelada',
+  function labelStatus(status) {
+    const mapa = {
+      pendente: 'Pendente',
+      aprovada: 'Aprovada',
+      pronta: 'Pronta p/ retirada',
+      entregue: 'Entregue',
+      recusada: 'Recusada',
+      cancelada: 'Cancelada',
+    }
+    return mapa[status] || status
   }
-  return mapa[status] || status
-}
+
   return (
     <div>
       <div className={styles.header}>
@@ -84,16 +88,16 @@ function labelStatus(status) {
 
       {solicitacoes.filter(s => s.status === 'pendente').length > 0 && (
         <div style={{
-          background: '#fff3e0',
-          border: '1px solid #ffe082',
+          background: '#fffbeb',
+          border: '1px solid #fde68a',
           borderRadius: '8px',
           padding: '12px 16px',
           marginBottom: '16px',
-          fontSize: '14px',
-          color: '#e65100',
+          fontSize: '13px',
+          color: '#d97706',
           fontWeight: '600'
         }}>
-          ⚠️ {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção!
+          {solicitacoes.filter(s => s.status === 'pendente').length} solicitação(ões) aguardando sua atenção
         </div>
       )}
 
@@ -132,7 +136,7 @@ function labelStatus(status) {
                     Ver detalhes
                   </button>
                   {sol.status === 'pendente' && (
-                    <button className={styles.btnCancelar} onClick={() => handleCancelar(sol.id)}>
+                    <button className={styles.btnCancelar} onClick={() => setSolicitacaoCancelando(sol)}>
                       Cancelar
                     </button>
                   )}
@@ -140,7 +144,7 @@ function labelStatus(status) {
               </div>
 
               {sol.finalidade && (
-                <p className={styles.cardFinalidade}>📋 {sol.finalidade}</p>
+                <p className={styles.cardFinalidade}>{sol.finalidade}</p>
               )}
 
               <div className={styles.cardItens}>
@@ -152,7 +156,7 @@ function labelStatus(status) {
               </div>
 
               {sol.observacoes && (
-                <p className={styles.cardObs}>💬 {sol.observacoes}</p>
+                <p className={styles.cardObs}>{sol.observacoes}</p>
               )}
 
               <div className={styles.cardRodape}>
@@ -184,6 +188,16 @@ function labelStatus(status) {
             addToast('Solicitação atualizada!', 'sucesso')
             carregarSolicitacoes()
           }}
+        />
+      )}
+
+      {solicitacaoCancelando && (
+        <ModalConfirmacao
+          titulo="Cancelar solicitação"
+          mensagem="Tem certeza que deseja cancelar esta solicitação? Esta ação não pode ser desfeita."
+          onConfirmar={handleCancelar}
+          onCancelar={() => setSolicitacaoCancelando(null)}
+          tipo="aviso"
         />
       )}
     </div>
