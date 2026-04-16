@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import styles from './Login.module.css'
 
 function Login() {
@@ -36,7 +36,12 @@ function Login() {
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
-      navigate('/dashboard')
+
+      if (data.usuario.perfil === 'solicitante') {
+        navigate('/solicitante')
+      } else {
+        navigate('/dashboard')
+      }
     } catch {
       setErro('Não foi possível conectar ao servidor')
     } finally {
@@ -48,10 +53,13 @@ function Login() {
     <div className={styles.container}>
       <div className={styles.left}>
         <div className={styles.leftContent}>
-          <div className={styles.brandIcon}>
-            <Package size={32} color="white" />
-          </div>
-          <h1 className={styles.brandTitle}>Almoxarifado<br />Escolar</h1>
+          <img
+            src="/uploadlogo/Prancheta 1.png"
+            alt="Logo"
+            style={{ height: '50px', objectFit: 'contain', marginBottom: '24px' }}
+            onError={e => e.target.style.display = 'none'}
+          />
+
           <p className={styles.brandDesc}>
             Controle completo de estoque, empréstimos e solicitações para sua instituição de ensino.
           </p>
@@ -75,7 +83,7 @@ function Login() {
       <div className={styles.right}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Bem-vindo de volta</h2>
+            <h2 className={styles.cardTitle}>Bem-vindo</h2>
             <p className={styles.cardSub}>Entre com suas credenciais para acessar o sistema</p>
           </div>
 

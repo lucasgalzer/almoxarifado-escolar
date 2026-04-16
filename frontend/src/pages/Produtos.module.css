@@ -194,3 +194,64 @@
 }
 
 .btnExcluir:hover { background: #fee2e2; }
+
+.btnEtiqueta {
+  padding: 5px 12px;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: #7c3aed;
+  transition: all 0.15s;
+}
+
+.btnEtiqueta:hover {
+  background: #ede9fe;
+  border-color: #7c3aed;
+}
+
+.btnSelecionar {
+  padding: 9px 16px;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnSelecionar:hover { background: #ede9fe; }
+
+.btnEtiquetaLote {
+  padding: 9px 16px;
+  background: #7c3aed;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnEtiquetaLote:hover:not(:disabled) { background: #6d28d9; }
+.btnEtiquetaLote:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnCancelarSelecao {
+  padding: 9px 16px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnCancelarSelecao:hover { background: var(--color-border); }
+
+.rowSelecionado { background: #f5f3ff !important; }
