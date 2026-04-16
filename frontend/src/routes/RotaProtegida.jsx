@@ -1,11 +1,14 @@
 import { Navigate } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
 
-function RotaProtegida({ children }) {
-  const { autenticado } = useAuth()
+function RotaProtegida({ children, perfis }) {
+  const { usuario } = useAuth()
 
-  if (!autenticado) {
-    return <Navigate to="/login" />
+  if (!usuario) return <Navigate to="/login" />
+
+  if (perfis && !perfis.includes(usuario.perfil)) {
+    if (usuario.perfil === 'solicitante') return <Navigate to="/solicitante" />
+    return <Navigate to="/dashboard" />
   }
 
   return children
