@@ -37,7 +37,9 @@ function Login() {
       localStorage.setItem('token', data.token)
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
 
-      if (data.usuario.perfil === 'solicitante') {
+      if (data.usuario.super_admin) {
+        navigate('/super-admin')
+      } else if (data.usuario.perfil === 'solicitante') {
         navigate('/solicitante')
       } else {
         navigate('/dashboard')

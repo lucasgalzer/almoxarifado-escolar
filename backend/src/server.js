@@ -21,6 +21,7 @@ const relatoriosRoutes = require('./routes/relatorios')
 const auditLogRoutes = require('./routes/auditLog')
 const usuariosRoutes = require('./routes/usuarios')
 const instituicaoRoutes = require('./routes/instituicao')
+const superAdminRoutes = require('./routes/superAdmin')
 
 const app = express()
 
@@ -58,6 +59,7 @@ app.use('/relatorios', relatoriosRoutes)
 app.use('/audit-log', auditLogRoutes)
 app.use('/usuarios', usuariosRoutes)
 app.use('/instituicao', instituicaoRoutes)
+app.use('/super-admin', superAdminRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)

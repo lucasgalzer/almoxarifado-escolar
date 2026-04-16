@@ -33,7 +33,8 @@ async function login(req, res) {
         id: usuario.id,
         email: usuario.email,
         perfil: usuario.perfil,
-        instituicao_id: usuario.instituicao_id
+        instituicao_id: usuario.instituicao_id,
+        super_admin: usuario.super_admin,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
@@ -46,7 +47,8 @@ async function login(req, res) {
         nome: usuario.nome,
         email: usuario.email,
         perfil: usuario.perfil,
-        instituicao_id: usuario.instituicao_id
+        instituicao_id: usuario.instituicao_id,
+        super_admin: usuario.super_admin,
       }
     })
   } catch (error) {
@@ -59,7 +61,7 @@ async function me(req, res) {
   try {
     const usuario = await db('usuarios')
       .where({ id: req.usuarioId })
-      .select('id', 'nome', 'email', 'perfil', 'instituicao_id')
+      .select('id', 'nome', 'email', 'perfil', 'instituicao_id', 'super_admin')
       .first()
 
     return res.json(usuario)

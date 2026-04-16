@@ -13,11 +13,13 @@ import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
 import Usuarios from './pages/Usuarios'
 import Solicitante from './pages/Solicitante'
+import SuperAdmin from './pages/SuperAdmin'
 import useAuth from './hooks/useAuth'
 
 function RedirecionarPorPerfil() {
   const { usuario } = useAuth()
   if (!usuario) return <Navigate to="/login" />
+  if (usuario.super_admin) return <Navigate to="/super-admin" />
   if (usuario.perfil === 'solicitante') return <Navigate to="/solicitante" />
   return <Navigate to="/dashboard" />
 }
@@ -27,11 +29,19 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+
+        <Route path="/super-admin" element={
+          <RotaProtegida>
+            <SuperAdmin />
+          </RotaProtegida>
+        } />
+
         <Route path="/solicitante" element={
           <RotaProtegida perfis={['solicitante']}>
             <Solicitante />
           </RotaProtegida>
         } />
+
         <Route path="/" element={
           <RotaProtegida perfis={['admin', 'operador']}>
             <Layout />
@@ -49,6 +59,8 @@ function App() {
           <Route path="configuracoes" element={<Configuracoes />} />
           <Route path="usuarios" element={<Usuarios />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   )
