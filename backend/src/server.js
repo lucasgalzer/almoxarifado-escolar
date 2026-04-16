@@ -61,7 +61,7 @@ app.use('/usuarios', usuariosRoutes)
 app.use('/instituicao', instituicaoRoutes)
 app.use('/super-admin', superAdminRoutes)
 
-app.use(rotaNaoEncontrada)
+app.use(rotaNaoEncontrada)  
 app.use(tratarErros)
 
 const PORT = process.env.PORT || 3333
