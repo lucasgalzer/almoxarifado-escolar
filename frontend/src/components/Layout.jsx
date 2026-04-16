@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Users, Archive,
   ArrowLeftRight, ClipboardList, Wrench,
-  BarChart2, Settings, LogOut, Menu, X, Box
+  BarChart2, Settings, LogOut, Menu, X, Box, UserCog
 } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
+import api from '../services/api'
 import styles from './Layout.module.css'
 
 const menuItems = [
@@ -18,12 +19,38 @@ const menuItems = [
   { path: '/manutencao',    label: 'Manutenção',     icon: Wrench },
   { path: '/relatorios',    label: 'Relatórios',     icon: BarChart2 },
   { path: '/configuracoes', label: 'Configurações',  icon: Settings },
+  { path: '/usuarios',      label: 'Usuários',       icon: UserCog },
 ]
+
+function ajustarCor(hex, percent) {
+  const num = parseInt(hex.replace('#', ''), 16)
+  const r = Math.min(255, Math.max(0, (num >> 16) + percent))
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + percent))
+  const b = Math.min(255, Math.max(0, (num & 0xff) + percent))
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
+}
 
 function Layout() {
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
   const [menuAberto, setMenuAberto] = useState(false)
+  const [nomeExibicao, setNomeExibicao] = useState('Escolar')
+  const [logoBase64, setLogoBase64] = useState('')
+
+  useEffect(() => {
+    api.get('/instituicao').then(({ data }) => {
+      if (data.cor_primaria) {
+        document.documentElement.style.setProperty('--color-primary', data.cor_primaria)
+        document.documentElement.style.setProperty('--color-primary-dark', ajustarCor(data.cor_primaria, -20))
+        document.documentElement.style.setProperty('--color-primary-light', ajustarCor(data.cor_primaria, 20))
+      }
+      if (data.cor_secundaria) {
+        document.documentElement.style.setProperty('--color-secondary', data.cor_secundaria)
+      }
+      if (data.nome_exibicao) setNomeExibicao(data.nome_exibicao)
+      if (data.logo_base64) setLogoBase64(data.logo_base64)
+    }).catch(console.error)
+  }, [])
 
   function handleLogout() {
     logout()
@@ -40,12 +67,20 @@ function Layout() {
 
       <aside className={`${styles.sidebar} ${menuAberto ? styles.sidebarAberto : ''}`}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <Box size={20} color="#7eb82c" />
-          </div>
+          {logoBase64 ? (
+            <img
+              src={logoBase64}
+              alt="Logo"
+              style={{ height: '60px', objectFit: 'contain', maxWidth: '60px' }}
+            />
+          ) : (
+            <div className={styles.logoIcon}>
+  <Box size={20} color="currentColor" />
+</div>
+          )}
           <div>
             <span className={styles.logoTitle}>Almoxarifado</span>
-            <span className={styles.logoSub}>Escolar</span>
+            <span className={styles.logoSub}>{nomeExibicao}</span>
           </div>
         </div>
 

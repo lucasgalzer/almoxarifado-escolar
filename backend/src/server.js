@@ -1,12 +1,13 @@
 const express = require('express')
 const cors = require('cors')
+const path = require('path')
 require('dotenv').config()
 
 const db = require('./config/database')
 const corsOptions = require('./config/cors')
 const { tratarErros, rotaNaoEncontrada } = require('./middlewares/erros')
 const authRoutes = require('./routes/auth')
-const categoriasRoutes = require('./routes/categorias') 
+const categoriasRoutes = require('./routes/categorias')
 const produtosRoutes = require('./routes/produtos')
 const importacaoRoutes = require('./routes/importacao')
 const pessoasRoutes = require('./routes/pessoas')
@@ -18,11 +19,15 @@ const solicitacoesRoutes = require('./routes/solicitacoes')
 const manutencoesRoutes = require('./routes/manutencoes')
 const relatoriosRoutes = require('./routes/relatorios')
 const auditLogRoutes = require('./routes/auditLog')
+const usuariosRoutes = require('./routes/usuarios')
+const instituicaoRoutes = require('./routes/instituicao')
 
 const app = express()
 
 app.use(cors(corsOptions))
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ limit: '10mb', extended: true }))
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 app.get('/health', async (req, res) => {
   try {
@@ -51,6 +56,8 @@ app.use('/solicitacoes', solicitacoesRoutes)
 app.use('/manutencoes', manutencoesRoutes)
 app.use('/relatorios', relatoriosRoutes)
 app.use('/audit-log', auditLogRoutes)
+app.use('/usuarios', usuariosRoutes)
+app.use('/instituicao', instituicaoRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)

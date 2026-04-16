@@ -1,49 +1,84 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import api from '../services/api'
 import { useToast } from './Toast'
 import styles from './ModalProduto.module.css'
 
 function ModalEmprestimo({ onFechar, onSalvar }) {
   const { addToast } = useToast()
-  const [produtos, setProdutos] = useState([])
   const [pessoas, setPessoas] = useState([])
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
+  const [produtoEncontrado, setProdutoEncontrado] = useState(null)
+  const [buscandoProduto, setBuscandoProduto] = useState(false)
+  const codigoRef = useRef(null)
 
   const [form, setForm] = useState({
-    produto_id: '',
+    codigo_interno: '',
     pessoa_id: '',
     data_devolucao_prevista: '',
     observacoes: '',
   })
 
   useEffect(() => {
-    Promise.all([
-      api.get('/produtos', { params: { tipo: 'reutilizavel', status: 'disponivel' } }),
-      api.get('/pessoas', { params: { ativo: true } })
-    ]).then(([{ data: prods }, { data: pess }]) => {
-      setProdutos(prods.filter(p => p.quantidade_atual > 0))
-      setPessoas(pess)
-    }).catch(console.error)
+    api.get('/pessoas', { params: { ativo: true } })
+      .then(({ data }) => setPessoas(data))
+      .catch(console.error)
+
+    setTimeout(() => codigoRef.current?.focus(), 100)
   }, [])
 
   function handleChange(e) {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
+    if (name === 'codigo_interno') {
+      setProdutoEncontrado(null)
+      setErro('')
+    }
   }
 
-  const produtoSelecionado = produtos.find(p => p.id === form.produto_id)
+  async function handleBuscarProduto() {
+  if (!form.codigo_interno.trim()) return
+  setBuscandoProduto(true)
+  setProdutoEncontrado(null)
+  setErro('')
+  try {
+    const { data } = await api.get('/produtos')
+    const produto = data.find(p => 
+      p.codigo_interno.toLowerCase() === form.codigo_interno.trim().toLowerCase()
+    )
+    if (!produto) {
+      setErro(`Produto "${form.codigo_interno}" não encontrado`)
+    } else if (produto.tipo !== 'reutilizavel') {
+      setErro(`"${produto.nome}" é consumível e não pode ser emprestado`)
+    } else if (produto.status !== 'disponivel') {
+      setErro(`"${produto.nome}" está ${produto.status}`)
+    } else if (produto.quantidade_atual <= 0) {
+      setErro(`"${produto.nome}" não tem estoque disponível`)
+    } else {
+      setProdutoEncontrado(produto)
+    }
+  } catch {
+    setErro('Erro ao buscar produto')
+  } finally {
+    setBuscandoProduto(false)
+  }
+}
 
   async function handleSubmit(e) {
     e.preventDefault()
     setErro('')
 
-    if (!form.produto_id) return setErro('Selecione um produto')
+    if (!produtoEncontrado) return setErro('Busque um produto válido')
     if (!form.pessoa_id) return setErro('Selecione uma pessoa')
 
     setCarregando(true)
     try {
-      await api.post('/emprestimos', form)
+      await api.post('/emprestimos', {
+        produto_id: produtoEncontrado.id,
+        pessoa_id: form.pessoa_id,
+        data_devolucao_prevista: form.data_devolucao_prevista || null,
+        observacoes: form.observacoes,
+      })
       addToast('Empréstimo registrado com sucesso!', 'sucesso')
       onSalvar()
     } catch (error) {
@@ -67,26 +102,59 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
           {erro && <div className={styles.erro}>{erro}</div>}
 
           <div className={styles.campo}>
-            <label>Produto *</label>
-            <select name="produto_id" value={form.produto_id} onChange={handleChange}>
-              <option value="">Selecione um produto reutilizável</option>
-              {produtos.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.codigo_interno} — {p.nome} (Disponível: {p.quantidade_atual})
-                </option>
-              ))}
-            </select>
+            <label>Código do produto *</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                ref={codigoRef}
+                name="codigo_interno"
+                value={form.codigo_interno}
+                onChange={handleChange}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleBuscarProduto())}
+                placeholder="Digite ou escaneie o código"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={handleBuscarProduto}
+                disabled={buscandoProduto || !form.codigo_interno.trim()}
+                style={{
+                  padding: '9px 16px',
+                  background: 'var(--color-secondary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  opacity: buscandoProduto ? 0.7 : 1
+                }}
+              >
+                {buscandoProduto ? 'Buscando...' : 'Buscar'}
+              </button>
+            </div>
           </div>
 
-          {produtoSelecionado && (
-            <div style={{ background: '#e8f5e9', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#2e7d32' }}>
-              ✅ {produtoSelecionado.nome} — {produtoSelecionado.quantidade_atual} unidade(s) disponível(is)
-              {produtoSelecionado.localizacao_fisica && ` — ${produtoSelecionado.localizacao_fisica}`}
+          {produtoEncontrado && (
+            <div style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 14px',
+              fontSize: '13px',
+              color: '#15803d'
+            }}>
+              <strong>{produtoEncontrado.nome}</strong> — {produtoEncontrado.codigo_interno}
+              <br />
+              <span style={{ fontSize: '12px' }}>
+                {produtoEncontrado.quantidade_atual} unidade(s) disponível(is)
+                {produtoEncontrado.localizacao_fisica && ` · ${produtoEncontrado.localizacao_fisica}`}
+              </span>
             </div>
           )}
 
           <div className={styles.campo}>
-            <label>Pessoa *</label>
+            <label>Solicitante *</label>
             <select name="pessoa_id" value={form.pessoa_id} onChange={handleChange}>
               <option value="">Selecione uma pessoa</option>
               {pessoas.map(p => (
@@ -113,14 +181,14 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
               name="observacoes"
               value={form.observacoes}
               onChange={handleChange}
-              rows={3}
+              rows={2}
               placeholder="Ex: Retirado para aula de artes — turma 6A"
             />
           </div>
 
           <div className={styles.acoes}>
             <button type="button" onClick={onFechar} className={styles.btnCancelar}>Cancelar</button>
-            <button type="submit" disabled={carregando} className={styles.btnSalvar}>
+            <button type="submit" disabled={carregando || !produtoEncontrado} className={styles.btnSalvar}>
               {carregando ? 'Registrando...' : 'Registrar Empréstimo'}
             </button>
           </div>

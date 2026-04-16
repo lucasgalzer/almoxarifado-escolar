@@ -269,9 +269,66 @@ async function devolver(req, res, next) {
   }
 }
 
-module.exports = {
-  listar,
-  buscarPorId,
-  registrar: registrarEmprestimo,
-  devolver
+async function devolverPorCodigo(req, res, next) {
+  try {
+    const { codigo_interno, observacoes, status } = req.body
+
+    if (!codigo_interno) {
+      return res.status(400).json({ erro: 'Código do produto é obrigatório' })
+    }
+
+    const produto = await db('produtos')
+      .where({ codigo_interno, instituicao_id: req.instituicaoId })
+      .first()
+
+    if (!produto) {
+      return res.status(404).json({ erro: `Produto "${codigo_interno}" não encontrado` })
+    }
+
+    const emprestimo = await db('emprestimos as e')
+      .join('produtos as p', 'e.produto_id', 'p.id')
+      .join('pessoas as pe', 'e.pessoa_id', 'pe.id')
+      .where('e.produto_id', produto.id)
+      .where('e.status', 'emprestado')
+      .select('e.*', 'p.nome as produto_nome', 'p.codigo_interno', 'pe.nome_completo as pessoa_nome')
+      .first()
+
+    if (!emprestimo) {
+      return res.status(404).json({ erro: `Nenhum empréstimo em aberto para "${codigo_interno}"` })
+    }
+
+    const statusFinal = status || 'devolvido'
+
+    await db.transaction(async trx => {
+      await trx('emprestimos').where({ id: emprestimo.id }).update({
+        status: statusFinal,
+        data_devolucao_efetiva: new Date(),
+        observacoes: observacoes || emprestimo.observacoes,
+        updated_at: new Date()
+      })
+
+      if (statusFinal === 'devolvido') {
+        await trx('produtos').where({ id: produto.id }).increment('quantidade_atual', 1).update({ updated_at: new Date() })
+
+        await trx('movimentacoes_estoque').insert({
+          produto_id: produto.id,
+          usuario_id: req.usuarioId,
+          pessoa_id: emprestimo.pessoa_id,
+          tipo: 'devolucao',
+          quantidade: 1,
+          motivo: 'Devolução de empréstimo',
+          observacoes,
+        })
+      }
+    })
+
+    return res.json({
+      mensagem: `"${produto.nome}" devolvido com sucesso!`,
+      emprestimo_id: emprestimo.id,
+      pessoa: emprestimo.pessoa_nome,
+    })
+  } catch (error) {
+    next(error)
+  }
 }
+module.exports = { listar, buscarPorId, registrar: registrarEmprestimo, devolver, devolverPorCodigo }

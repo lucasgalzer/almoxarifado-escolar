@@ -11,6 +11,7 @@ import Solicitacoes from './pages/Solicitacoes'
 import Manutencao from './pages/Manutencao'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
+import Usuarios from './pages/Usuarios'
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Route path="manutencao" element={<Manutencao />} />
           <Route path="relatorios" element={<Relatorios />} />
           <Route path="configuracoes" element={<Configuracoes />} />
+          <Route path="usuarios" element={<Usuarios />} />
 
         </Route>
       </Routes>

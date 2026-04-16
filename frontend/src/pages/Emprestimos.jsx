@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import api from '../services/api'
 import ModalEmprestimo from '../components/ModalEmprestimo'
-import styles from './Emprestimos.module.css'
 import ModalDevolucao from '../components/ModalDevolucao'
 import { useToast } from '../components/Toast'
+import styles from './Emprestimos.module.css'
 
 function Emprestimos() {
   const { addToast } = useToast()
@@ -15,6 +15,10 @@ function Emprestimos() {
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
   const [emprestimoDevolvendo, setEmprestimoDevolvendo] = useState(null)
+
+  const [codigoDevolucao, setCodigoDevolucao] = useState('')
+  const [devolvendo, setDevolvendo] = useState(false)
+  const inputDevolucaoRef = useRef(null)
 
   useEffect(() => {
     api.get('/pessoas', { params: { ativo: true } })
@@ -41,16 +45,32 @@ function Emprestimos() {
     }
   }
 
-  const setores = [...new Set(pessoas.map(p => p.setor).filter(Boolean))]
+  async function handleDevolverPorCodigo(e) {
+    e.preventDefault()
+    if (!codigoDevolucao.trim()) return
 
+    setDevolvendo(true)
+    try {
+      const { data } = await api.post('/emprestimos/devolver-por-codigo', {
+        codigo_interno: codigoDevolucao.trim()
+      })
+      addToast(`${data.mensagem} — ${data.pessoa}`, 'sucesso')
+      setCodigoDevolucao('')
+      carregarEmprestimos()
+      inputDevolucaoRef.current?.focus()
+    } catch (error) {
+      addToast(error.response?.data?.erro || 'Erro ao devolver', 'erro')
+      setCodigoDevolucao('')
+      inputDevolucaoRef.current?.focus()
+    } finally {
+      setDevolvendo(false)
+    }
+  }
+
+  const setores = [...new Set(pessoas.map(p => p.setor).filter(Boolean))]
   const emprestimosFiltrados = filtroSetor
     ? emprestimos.filter(e => e.pessoa_setor === filtroSetor)
     : emprestimos
-
-  async function handleDevolver(emprestimo) {
-    setEmprestimoDevolvendo(emprestimo)
-  }
-
 
   function formatarData(data) {
     if (!data) return '—'
@@ -62,24 +82,22 @@ function Emprestimos() {
     const mapa = {
       emprestado: styles.badgeEmprestado,
       devolvido: styles.badgeDevolvido,
-      atrasado: styles.badgeAtrasado,
       perdido: styles.badgePerdido,
       danificado: styles.badgeDanificado,
     }
     return mapa[emp.status] || ''
   }
 
- function labelStatus(emp) {
-  if (emp.atrasado && emp.status === 'emprestado') return 'Atrasado'
-  const mapa = {
-    emprestado: 'Emprestado',
-    devolvido: 'Devolvido',
-    atrasado: 'Atrasado',
-    perdido: 'Perdido',
-    danificado: 'Danificado',
+  function labelStatus(emp) {
+    if (emp.atrasado && emp.status === 'emprestado') return 'Atrasado'
+    const mapa = {
+      emprestado: 'Emprestado',
+      devolvido: 'Devolvido',
+      perdido: 'Perdido',
+      danificado: 'Danificado',
+    }
+    return mapa[emp.status] || emp.status
   }
-  return mapa[emp.status] || emp.status
-}
 
   return (
     <div>
@@ -88,8 +106,25 @@ function Emprestimos() {
           <h1 className={styles.titulo}>Empréstimos</h1>
           <p className={styles.subtitulo}>{emprestimosFiltrados.length} registro(s) encontrado(s)</p>
         </div>
+      </div>
+
+      <div className={styles.acoesRapidas}>
+        <form onSubmit={handleDevolverPorCodigo} className={styles.formDevolucao}>
+          <input
+            ref={inputDevolucaoRef}
+            value={codigoDevolucao}
+            onChange={e => setCodigoDevolucao(e.target.value)}
+            placeholder="Código do produto para devolver..."
+            className={styles.inputCodigo}
+            disabled={devolvendo}
+          />
+          <button type="submit" disabled={devolvendo || !codigoDevolucao.trim()} className={styles.btnDevolverRapido}>
+            {devolvendo ? 'Devolvendo...' : 'Devolver'}
+          </button>
+        </form>
+
         <button className={styles.btnNovo} onClick={() => setModalAberto(true)}>
-          + Novo Empréstimo
+          + Inserir Empréstimo
         </button>
       </div>
 
@@ -141,7 +176,7 @@ function Emprestimos() {
                   <td>
                     <strong>{emp.produto_nome}</strong>
                     <br />
-                    <small style={{ color: '#888' }}>{emp.codigo_interno}</small>
+                    <small style={{ color: 'var(--color-text-muted)' }}>{emp.codigo_interno}</small>
                   </td>
                   <td>{emp.pessoa_nome}</td>
                   <td>{emp.pessoa_setor || '—'}</td>
@@ -154,12 +189,9 @@ function Emprestimos() {
                   </td>
                   <td>
                     {emp.status === 'emprestado' && (
-                      <button
-  className={styles.btnDevolver}
-  onClick={() => handleDevolver(emp)}
->
-  Devolver
-</button>
+                      <button className={styles.btnDevolver} onClick={() => setEmprestimoDevolvendo(emp)}>
+                        Devolver
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -177,15 +209,12 @@ function Emprestimos() {
       )}
 
       {emprestimoDevolvendo && (
-  <ModalDevolucao
-    emprestimo={emprestimoDevolvendo}
-    onFechar={() => setEmprestimoDevolvendo(null)}
-    onSalvar={() => {
-      setEmprestimoDevolvendo(null)
-      carregarEmprestimos()
-    }}
-  />
-)}
+        <ModalDevolucao
+          emprestimo={emprestimoDevolvendo}
+          onFechar={() => setEmprestimoDevolvendo(null)}
+          onSalvar={() => { setEmprestimoDevolvendo(null); carregarEmprestimos() }}
+        />
+      )}
     </div>
   )
 }
