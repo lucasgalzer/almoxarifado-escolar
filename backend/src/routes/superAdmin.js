@@ -2,9 +2,9 @@ const express = require('express')
 const router = express.Router()
 const db = require('../config/database')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const { autenticar } = require('../middlewares/auth')
 
-// Middleware para verificar se é super admin
 async function superAdminOnly(req, res, next) {
   try {
     const usuario = await db('usuarios').where({ id: req.usuarioId }).first()
@@ -74,6 +74,26 @@ router.post('/instituicoes', autenticar, superAdminOnly, async (req, res, next) 
   }
 })
 
+// Editar escola
+router.put('/instituicoes/:id', autenticar, superAdminOnly, async (req, res, next) => {
+  try {
+    const { nome, email, cnpj, telefone } = req.body
+
+    if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório' })
+
+    const [instituicao] = await db('instituicoes')
+      .where({ id: req.params.id })
+      .update({ nome, email, cnpj, telefone, updated_at: new Date() })
+      .returning('*')
+
+    if (!instituicao) return res.status(404).json({ erro: 'Instituição não encontrada' })
+
+    return res.json(instituicao)
+  } catch (error) {
+    next(error)
+  }
+})
+
 // Ativar/desativar instituição
 router.patch('/instituicoes/:id/toggle', autenticar, superAdminOnly, async (req, res, next) => {
   try {
@@ -86,6 +106,75 @@ router.patch('/instituicoes/:id/toggle', autenticar, superAdminOnly, async (req,
       .returning('*')
 
     return res.json(atualizada)
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Acessar como escola
+router.post('/instituicoes/:id/acessar', autenticar, superAdminOnly, async (req, res, next) => {
+  try {
+    const admin = await db('usuarios')
+      .where({ instituicao_id: req.params.id, perfil: 'admin', ativo: true })
+      .first()
+
+    if (!admin) {
+      return res.status(404).json({ erro: 'Nenhum admin ativo encontrado nessa escola' })
+    }
+
+    const token = jwt.sign(
+      {
+        id: admin.id,
+        email: admin.email,
+        perfil: admin.perfil,
+        instituicao_id: admin.instituicao_id,
+        super_admin: false,
+        acessando_como: true,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' }
+    )
+
+    return res.json({
+      token,
+      usuario: {
+        id: admin.id,
+        nome: admin.nome,
+        email: admin.email,
+        perfil: admin.perfil,
+        instituicao_id: admin.instituicao_id,
+        super_admin: false,
+        acessando_como: true,
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Listar usuários de uma escola
+router.get('/instituicoes/:id/usuarios', autenticar, superAdminOnly, async (req, res, next) => {
+  try {
+    const usuarios = await db('usuarios')
+      .where({ instituicao_id: req.params.id })
+      .select('id', 'nome', 'email', 'perfil', 'ativo', 'created_at')
+      .orderBy('nome')
+    return res.json(usuarios)
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Atualizar senha de usuário de uma escola
+router.patch('/usuarios/:id/senha', autenticar, superAdminOnly, async (req, res, next) => {
+  try {
+    const { nova_senha } = req.body
+    if (!nova_senha || nova_senha.length < 6) {
+      return res.status(400).json({ erro: 'Senha deve ter pelo menos 6 caracteres' })
+    }
+    const senha_hash = await bcrypt.hash(nova_senha, 10)
+    await db('usuarios').where({ id: req.params.id }).update({ senha_hash, updated_at: new Date() })
+    return res.json({ mensagem: 'Senha atualizada com sucesso' })
   } catch (error) {
     next(error)
   }

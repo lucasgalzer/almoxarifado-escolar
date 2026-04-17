@@ -18,8 +18,20 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('usuario')
+      localStorage.removeItem('token_super_admin')
+      localStorage.removeItem('usuario_super_admin')
       window.location.href = '/login'
     }
+
+    if (error.response?.status === 403) {
+      const msg = error.response?.data?.erro || ''
+      if (msg.includes('desativada')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('usuario')
+        window.location.href = '/login?erro=instituicao_desativada'
+      }
+    }
+
     return Promise.reject(error)
   }
 )

@@ -269,3 +269,48 @@
 
 .btnSalvar:hover:not(:disabled) { background: #4f46e5; }
 .btnSalvar:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.btnEditar {
+  flex: 1;
+  padding: 7px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnEditar:hover { background: #dbeafe; }
+
+.btnAcessar {
+  flex: 1;
+  padding: 7px;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnAcessar:hover { background: #ede9fe; }
+
+.btnUsuarios {
+  flex: 1;
+  padding: 7px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnUsuarios:hover { background: #dcfce7; }

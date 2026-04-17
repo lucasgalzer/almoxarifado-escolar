@@ -10,16 +10,16 @@ import api from '../services/api'
 import styles from './Layout.module.css'
 
 const menuItems = [
-  { path: '/dashboard',     label: 'Dashboard',     icon: LayoutDashboard },
-  { path: '/produtos',      label: 'Produtos',       icon: Package },
-  { path: '/pessoas',       label: 'Pessoas',        icon: Users },
-  { path: '/estoque',       label: 'Estoque',        icon: Archive },
-  { path: '/emprestimos',   label: 'Empréstimos',    icon: ArrowLeftRight },
-  { path: '/solicitacoes',  label: 'Solicitações',   icon: ClipboardList },
-  { path: '/manutencao',    label: 'Manutenção',     icon: Wrench },
-  { path: '/relatorios',    label: 'Relatórios',     icon: BarChart2 },
-  { path: '/configuracoes', label: 'Configurações',  icon: Settings },
-  { path: '/usuarios',      label: 'Usuários',       icon: UserCog },
+  { path: '/dashboard',     label: 'Dashboard',     icon: LayoutDashboard, perfis: ['admin', 'operador'] },
+  { path: '/produtos',      label: 'Produtos',       icon: Package,         perfis: ['admin', 'operador'] },
+  { path: '/pessoas',       label: 'Pessoas',        icon: Users,           perfis: ['admin', 'operador'] },
+  { path: '/estoque',       label: 'Estoque',        icon: Archive,         perfis: ['admin', 'operador'] },
+  { path: '/emprestimos',   label: 'Empréstimos',    icon: ArrowLeftRight,  perfis: ['admin', 'operador'] },
+  { path: '/solicitacoes',  label: 'Solicitações',   icon: ClipboardList,   perfis: ['admin', 'operador'] },
+  { path: '/manutencao',    label: 'Manutenção',     icon: Wrench,          perfis: ['admin', 'operador'] },
+  { path: '/relatorios',    label: 'Relatórios',     icon: BarChart2,       perfis: ['admin', 'operador'] },
+  { path: '/configuracoes', label: 'Configurações',  icon: Settings,        perfis: ['admin'] },
+  { path: '/usuarios',      label: 'Usuários',       icon: UserCog,         perfis: ['admin'] },
 ]
 
 function ajustarCor(hex, percent) {
@@ -36,6 +36,7 @@ function Layout() {
   const [menuAberto, setMenuAberto] = useState(false)
   const [nomeExibicao, setNomeExibicao] = useState('Escolar')
   const [logoBase64, setLogoBase64] = useState('')
+  const acessandoComo = !!localStorage.getItem('token_super_admin')
 
   useEffect(() => {
     api.get('/instituicao').then(({ data }) => {
@@ -57,15 +58,66 @@ function Layout() {
     navigate('/login')
   }
 
+  function voltarSuperAdmin() {
+    localStorage.setItem('token', localStorage.getItem('token_super_admin'))
+    localStorage.setItem('usuario', localStorage.getItem('usuario_super_admin'))
+    localStorage.removeItem('token_super_admin')
+    localStorage.removeItem('usuario_super_admin')
+    window.location.href = '/super-admin'
+  }
+
+  const itensFiltrados = menuItems.filter(item =>
+    item.perfis.includes(usuario?.perfil)
+  )
+
   return (
     <div className={styles.container}>
-      <button className={styles.menuToggle} onClick={() => setMenuAberto(!menuAberto)}>
+      {acessandoComo && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          background: '#6366f1',
+          color: 'white',
+          padding: '8px 20px',
+          fontSize: '13px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          zIndex: 9999,
+        }}>
+          <span>Você está acessando como administrador desta escola.</span>
+          <button
+            onClick={voltarSuperAdmin}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
+              padding: '4px 14px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600',
+            }}
+          >
+            ← Voltar ao Super Admin
+          </button>
+        </div>
+      )}
+
+      <button
+        className={styles.menuToggle}
+        style={acessandoComo ? { top: '48px' } : {}}
+        onClick={() => setMenuAberto(!menuAberto)}
+      >
         {menuAberto ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <div className={menuAberto ? styles.overlayAberto : styles.overlay} onClick={() => setMenuAberto(false)} />
 
-      <aside className={`${styles.sidebar} ${menuAberto ? styles.sidebarAberto : ''}`}>
+      <aside
+        className={`${styles.sidebar} ${menuAberto ? styles.sidebarAberto : ''}`}
+        style={acessandoComo ? { paddingTop: '36px' } : {}}
+      >
         <div className={styles.logo}>
           {logoBase64 ? (
             <img
@@ -75,8 +127,8 @@ function Layout() {
             />
           ) : (
             <div className={styles.logoIcon}>
-  <Box size={20} color="currentColor" />
-</div>
+              <Box size={20} color="currentColor" />
+            </div>
           )}
           <div>
             <span className={styles.logoTitle}>Almoxarifado</span>
@@ -85,7 +137,7 @@ function Layout() {
         </div>
 
         <nav className={styles.nav}>
-          {menuItems.map(item => {
+          {itensFiltrados.map(item => {
             const Icon = item.icon
             return (
               <NavLink
@@ -120,7 +172,7 @@ function Layout() {
         </div>
       </aside>
 
-      <main className={styles.main}>
+      <main className={styles.main} style={acessandoComo ? { paddingTop: '64px' } : {}}>
         <Outlet />
       </main>
     </div>

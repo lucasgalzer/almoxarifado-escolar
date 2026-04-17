@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import styles from './Login.module.css'
@@ -9,6 +9,13 @@ function Login() {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('erro') === 'instituicao_desativada') {
+      setErro('Sua instituição foi desativada. Entre em contato com o suporte.')
+    }
+  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
