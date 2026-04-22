@@ -30,7 +30,7 @@ async function buscarPorId(req, res, next) {
 
 async function criar(req, res, next) {
   try {
-    const { nome, descricao } = req.body
+    const { nome, descricao, tipo_controle } = req.body
 
     if (!nome) {
       return res.status(400).json({ erro: 'Nome é obrigatório' })
@@ -39,7 +39,8 @@ async function criar(req, res, next) {
     const [categoria] = await db('categorias').insert({
       instituicao_id: req.instituicaoId,
       nome,
-      descricao
+      descricao,
+      tipo_controle: tipo_controle || 'quantidade'
     }).returning('*')
 
     return res.status(201).json(categoria)
@@ -50,7 +51,7 @@ async function criar(req, res, next) {
 
 async function atualizar(req, res, next) {
   try {
-    const { nome, descricao } = req.body
+    const { nome, descricao, tipo_controle } = req.body
 
     if (!nome) {
       return res.status(400).json({ erro: 'Nome é obrigatório' })
@@ -58,7 +59,7 @@ async function atualizar(req, res, next) {
 
     const [categoria] = await db('categorias')
       .where({ id: req.params.id, instituicao_id: req.instituicaoId })
-      .update({ nome, descricao, updated_at: new Date() })
+      .update({ nome, descricao, tipo_controle: tipo_controle || 'quantidade', updated_at: new Date() })
       .returning('*')
 
     if (!categoria) {

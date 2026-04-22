@@ -47,7 +47,8 @@ async function criar(req, res, next) {
     const {
       codigo_interno, nome, descricao, categoria_id,
       unidade_medida, tipo, quantidade_atual,
-      quantidade_minima, localizacao_fisica, observacoes
+      quantidade_minima, localizacao_fisica, observacoes,
+      campos_extras, status
     } = req.body
 
     if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório' })
@@ -62,6 +63,23 @@ async function criar(req, res, next) {
       return res.status(409).json({ erro: 'Código interno já cadastrado' })
     }
 
+    // Busca tipo de controle da categoria
+    let tipoControle = 'quantidade'
+    if (categoria_id) {
+      const categoria = await db('categorias').where({ id: categoria_id }).first()
+      tipoControle = categoria?.tipo_controle || 'quantidade'
+
+      const camposObrigatorios = await db('campos_categoria')
+        .where({ categoria_id, obrigatorio: true })
+
+      for (const campo of camposObrigatorios) {
+        const valor = campos_extras?.[campo.nome]
+        if (!valor && valor !== 0 && valor !== false) {
+          return res.status(400).json({ erro: `Campo "${campo.label}" é obrigatório` })
+        }
+      }
+    }
+
     const [produto] = await db('produtos').insert({
       instituicao_id: req.instituicaoId,
       codigo_interno,
@@ -70,11 +88,12 @@ async function criar(req, res, next) {
       categoria_id: categoria_id || null,
       unidade_medida: unidade_medida || 'un',
       tipo,
-      quantidade_atual: quantidade_atual || 0,
-      quantidade_minima: quantidade_minima || 0,
+      quantidade_atual: tipoControle === 'individual' ? 1 : (quantidade_atual || 0),
+      quantidade_minima: tipoControle === 'individual' ? 0 : (quantidade_minima || 0),
       localizacao_fisica,
       observacoes,
-      status: 'disponivel'
+      campos_extras: campos_extras ? JSON.stringify(campos_extras) : null,
+      status: status || 'disponivel'
     }).returning('*')
 
     await registrar(null, {
@@ -97,11 +116,29 @@ async function atualizar(req, res, next) {
     const {
       codigo_interno, nome, descricao, categoria_id,
       unidade_medida, tipo, quantidade_minima,
-      localizacao_fisica, status, observacoes
+      localizacao_fisica, status, observacoes,
+      campos_extras
     } = req.body
 
     if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório' })
     if (!tipo) return res.status(400).json({ erro: 'Tipo é obrigatório' })
+
+    // Busca tipo de controle da categoria
+    let tipoControle = 'quantidade'
+    if (categoria_id) {
+      const categoria = await db('categorias').where({ id: categoria_id }).first()
+      tipoControle = categoria?.tipo_controle || 'quantidade'
+
+      const camposObrigatorios = await db('campos_categoria')
+        .where({ categoria_id, obrigatorio: true })
+
+      for (const campo of camposObrigatorios) {
+        const valor = campos_extras?.[campo.nome]
+        if (!valor && valor !== 0 && valor !== false) {
+          return res.status(400).json({ erro: `Campo "${campo.label}" é obrigatório` })
+        }
+      }
+    }
 
     const [produto] = await db('produtos')
       .where({ id: req.params.id, instituicao_id: req.instituicaoId })
@@ -112,10 +149,11 @@ async function atualizar(req, res, next) {
         categoria_id: categoria_id || null,
         unidade_medida,
         tipo,
-        quantidade_minima,
+        quantidade_minima: tipoControle === 'individual' ? 0 : (quantidade_minima || 0),
         localizacao_fisica,
         status,
         observacoes,
+        campos_extras: campos_extras ? JSON.stringify(campos_extras) : null,
         updated_at: new Date()
       }).returning('*')
 
