@@ -31,16 +31,18 @@ function Estoque() {
   }
 
   function badgeEstoque(produto) {
-    if (produto.quantidade_atual === 0) return styles.badgeZerado
-    if (produto.quantidade_atual <= produto.quantidade_minima) return styles.badgeBaixo
-    return styles.badgeOk
-  }
+  if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return styles.badgeEmprestado
+  if (produto.quantidade_atual === 0) return styles.badgeZerado
+  if (produto.quantidade_atual <= produto.quantidade_minima) return styles.badgeBaixo
+  return styles.badgeOk
+}
 
-  function labelEstoque(produto) {
-    if (produto.quantidade_atual === 0) return 'Zerado'
-    if (produto.quantidade_atual <= produto.quantidade_minima) return 'Estoque baixo'
-    return 'Normal'
-  }
+function labelEstoque(produto) {
+  if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return 'Emprestado'
+  if (produto.quantidade_atual === 0) return 'Zerado'
+  if (produto.quantidade_atual <= produto.quantidade_minima) return 'Estoque baixo'
+  return 'Normal'
+}
 
 function labelTipo(tipo) {
   const mapa = {
