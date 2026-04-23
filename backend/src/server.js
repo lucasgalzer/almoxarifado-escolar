@@ -22,6 +22,7 @@ const auditLogRoutes = require('./routes/auditLog')
 const usuariosRoutes = require('./routes/usuarios')
 const instituicaoRoutes = require('./routes/instituicao')
 const superAdminRoutes = require('./routes/superAdmin')
+const { iniciarJobs } = require('./services/jobs')
 
 const app = express()
 
@@ -61,10 +62,11 @@ app.use('/usuarios', usuariosRoutes)
 app.use('/instituicao', instituicaoRoutes)
 app.use('/super-admin', superAdminRoutes)
 
-app.use(rotaNaoEncontrada)  
+app.use(rotaNaoEncontrada)
 app.use(tratarErros)
 
 const PORT = process.env.PORT || 3333
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT} em modo ${process.env.NODE_ENV}`)
+  iniciarJobs()
 })
