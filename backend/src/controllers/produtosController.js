@@ -3,21 +3,40 @@ const { registrar } = require('../utils/auditLog')
 
 async function listar(req, res, next) {
   try {
-    const { categoria_id, status, tipo, busca } = req.query
+    const { categoria_id, status, tipo, busca, pagina = 1, por_pagina = 20 } = req.query
 
-    let query = db('produtos as p')
+    let queryBase = db('produtos as p')
       .leftJoin('categorias as c', 'p.categoria_id', 'c.id')
       .where('p.instituicao_id', req.instituicaoId)
+
+    if (categoria_id) queryBase = queryBase.where('p.categoria_id', categoria_id)
+    if (status) queryBase = queryBase.where('p.status', status)
+    if (tipo) queryBase = queryBase.where('p.tipo', tipo)
+    if (busca) queryBase = queryBase.whereILike('p.nome', `%${busca}%`)
+
+    // Se pedir todos retorna sem paginação
+    if (por_pagina === 'todos') {
+      const produtos = await queryBase.clone().select('p.*', 'c.nome as categoria_nome').orderBy('p.nome')
+      return res.json({ dados: produtos, total: produtos.length, pagina: 1, total_paginas: 1 })
+    }
+
+    // Conta total separado
+    const [{ total }] = await queryBase.clone().count('p.id as total')
+
+    const offset = (parseInt(pagina) - 1) * parseInt(por_pagina)
+    const produtos = await queryBase.clone()
       .select('p.*', 'c.nome as categoria_nome')
       .orderBy('p.nome')
+      .limit(parseInt(por_pagina))
+      .offset(offset)
 
-    if (categoria_id) query = query.where('p.categoria_id', categoria_id)
-    if (status) query = query.where('p.status', status)
-    if (tipo) query = query.where('p.tipo', tipo)
-    if (busca) query = query.whereILike('p.nome', `%${busca}%`)
-
-    const produtos = await query
-    return res.json(produtos)
+    return res.json({
+      dados: produtos,
+      total: parseInt(total),
+      pagina: parseInt(pagina),
+      por_pagina: parseInt(por_pagina),
+      total_paginas: Math.ceil(parseInt(total) / parseInt(por_pagina))
+    })
   } catch (error) {
     next(error)
   }

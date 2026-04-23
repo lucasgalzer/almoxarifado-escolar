@@ -9,6 +9,8 @@ import ModalEtiquetaLote from '../components/ModalEtiquetaLote'
 import { useToast } from '../components/Toast'
 import styles from './Produtos.module.css'
 
+const POR_PAGINA = 20
+
 function Produtos() {
   const { addToast } = useToast()
 
@@ -17,6 +19,9 @@ function Produtos() {
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [pagina, setPagina] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [total, setTotal] = useState(0)
 
   const [modalAberto, setModalAberto] = useState(false)
   const [produtoSelecionado, setProdutoSelecionado] = useState(null)
@@ -30,18 +35,24 @@ function Produtos() {
   const [modoSelecao, setModoSelecao] = useState(false)
 
   useEffect(() => {
-    carregarProdutos()
+    setPagina(1)
   }, [busca, filtroTipo, filtroStatus])
+
+  useEffect(() => {
+    carregarProdutos()
+  }, [busca, filtroTipo, filtroStatus, pagina])
 
   async function carregarProdutos() {
     try {
       setCarregando(true)
-      const params = {}
+      const params = { pagina, por_pagina: POR_PAGINA }
       if (busca) params.busca = busca
       if (filtroTipo) params.tipo = filtroTipo
       if (filtroStatus) params.status = filtroStatus
       const { data } = await api.get('/produtos', { params })
-      setProdutos(data)
+      setProdutos(data.dados)
+      setTotal(data.total)
+      setTotalPaginas(data.total_paginas)
     } catch (error) {
       console.error(error)
     } finally {
@@ -129,7 +140,7 @@ function Produtos() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.titulo}>Produtos</h1>
-          <p className={styles.subtitulo}>{produtos.length} produto(s) encontrado(s)</p>
+          <p className={styles.subtitulo}>{total} produto(s) encontrado(s)</p>
         </div>
 
         <div className={styles.acoes}>
@@ -138,28 +149,16 @@ function Produtos() {
               <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', alignSelf: 'center' }}>
                 {selecionados.length} selecionado(s)
               </span>
-              <button
-                className={styles.btnEtiquetaLote}
-                disabled={selecionados.length === 0}
-                onClick={() => setModalLoteAberto(true)}
-              >
+              <button className={styles.btnEtiquetaLote} disabled={selecionados.length === 0} onClick={() => setModalLoteAberto(true)}>
                 Gerar Etiquetas ({selecionados.length})
               </button>
-              <button className={styles.btnCancelarSelecao} onClick={cancelarSelecao}>
-                Cancelar
-              </button>
+              <button className={styles.btnCancelarSelecao} onClick={cancelarSelecao}>Cancelar</button>
             </>
           ) : (
             <>
-              <button className={styles.btnSelecionar} onClick={() => setModoSelecao(true)}>
-                Etiquetas em lote
-              </button>
-              <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>
-                Importar CSV
-              </button>
-              <button className={styles.btnNovo} onClick={abrirModalNovo}>
-                + Novo Produto
-              </button>
+              <button className={styles.btnSelecionar} onClick={() => setModoSelecao(true)}>Etiquetas em lote</button>
+              <button className={styles.btnImportar} onClick={() => setModalCSVAberto(true)}>Importar CSV</button>
+              <button className={styles.btnNovo} onClick={abrirModalNovo}>+ Novo Produto</button>
             </>
           )}
         </div>
@@ -218,7 +217,7 @@ function Produtos() {
               {produtos.map(produto => (
                 <tr
                   key={produto.id}
-                  className={`${produto.quantidade_atual <= produto.quantidade_minima ? styles.rowAlerta : ''} ${selecionados.includes(produto.id) ? styles.rowSelecionado : ''}`}
+                  className={`${produto.quantidade_atual <= produto.quantidade_minima && produto.quantidade_minima > 0 ? styles.rowAlerta : ''} ${selecionados.includes(produto.id) ? styles.rowSelecionado : ''}`}
                   onClick={modoSelecao ? () => toggleSelecao(produto.id) : undefined}
                   style={modoSelecao ? { cursor: 'pointer' } : {}}
                 >
@@ -260,6 +259,30 @@ function Produtos() {
             </tbody>
           </table>
         )}
+
+        {!carregando && totalPaginas > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Página {pagina} de {totalPaginas} — {total} produto(s)
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setPagina(p => Math.max(1, p - 1))}
+                disabled={pagina === 1}
+                style={{ padding: '6px 14px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', fontSize: '13px', cursor: pagina === 1 ? 'not-allowed' : 'pointer', opacity: pagina === 1 ? 0.5 : 1 }}
+              >
+                ← Anterior
+              </button>
+              <button
+                onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+                disabled={pagina === totalPaginas}
+                style={{ padding: '6px 14px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', fontSize: '13px', cursor: pagina === totalPaginas ? 'not-allowed' : 'pointer', opacity: pagina === totalPaginas ? 0.5 : 1 }}
+              >
+                Próximo →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {modalAberto && (
@@ -288,10 +311,7 @@ function Produtos() {
       )}
 
       {modalLoteAberto && (
-        <ModalEtiquetaLote
-          produtos={produtosSelecionados}
-          onFechar={() => setModalLoteAberto(false)}
-        />
+        <ModalEtiquetaLote produtos={produtosSelecionados} onFechar={() => setModalLoteAberto(false)} />
       )}
     </div>
   )

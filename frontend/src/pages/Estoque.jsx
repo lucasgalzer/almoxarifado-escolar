@@ -9,6 +9,7 @@ function Estoque() {
   const [carregando, setCarregando] = useState(true)
   const [modalAberto, setModalAberto] = useState(false)
   const [aba, setAba] = useState('saldo')
+  const [total, setTotal] = useState(0)
 
   useEffect(() => {
     carregarDados()
@@ -18,10 +19,11 @@ function Estoque() {
     try {
       setCarregando(true)
       const [{ data: prods }, { data: movs }] = await Promise.all([
-        api.get('/produtos'),
+        api.get('/produtos', { params: { por_pagina: 'todos' } }),
         api.get('/estoque/movimentacoes')
       ])
-      setProdutos(prods)
+      setProdutos(prods.dados)
+      setTotal(prods.total)
       setMovimentacoes(movs)
     } catch (error) {
       console.error(error)
@@ -31,28 +33,28 @@ function Estoque() {
   }
 
   function badgeEstoque(produto) {
-  if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return styles.badgeEmprestado
-  if (produto.quantidade_atual === 0) return styles.badgeZerado
-  if (produto.quantidade_atual <= produto.quantidade_minima) return styles.badgeBaixo
-  return styles.badgeOk
-}
-
-function labelEstoque(produto) {
-  if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return 'Emprestado'
-  if (produto.quantidade_atual === 0) return 'Zerado'
-  if (produto.quantidade_atual <= produto.quantidade_minima) return 'Estoque baixo'
-  return 'Normal'
-}
-
-function labelTipo(tipo) {
-  const mapa = {
-    entrada: 'Entrada',
-    saida: 'Saída',
-    ajuste: 'Ajuste',
-    devolucao: 'Devolução',
+    if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return styles.badgeEmprestado
+    if (produto.quantidade_atual === 0) return styles.badgeZerado
+    if (produto.quantidade_atual <= produto.quantidade_minima) return styles.badgeBaixo
+    return styles.badgeOk
   }
-  return mapa[tipo] || tipo
-}
+
+  function labelEstoque(produto) {
+    if (produto.quantidade_atual === 0 && produto.tipo === 'reutilizavel') return 'Emprestado'
+    if (produto.quantidade_atual === 0) return 'Zerado'
+    if (produto.quantidade_atual <= produto.quantidade_minima) return 'Estoque baixo'
+    return 'Normal'
+  }
+
+  function labelTipo(tipo) {
+    const mapa = {
+      entrada: 'Entrada',
+      saida: 'Saída',
+      ajuste: 'Ajuste',
+      devolucao: 'Devolução',
+    }
+    return mapa[tipo] || tipo
+  }
 
   function classeTipo(tipo) {
     const mapa = {
@@ -69,11 +71,11 @@ function labelTipo(tipo) {
   }
 
   return (
-     <div>
+    <div>
       <div className={styles.header}>
         <div>
           <h1 className={styles.titulo}>Estoque</h1>
-          <p className={styles.subtitulo}>{produtos.length} produto(s) cadastrado(s)</p>
+          <p className={styles.subtitulo}>{total} produto(s) cadastrado(s)</p>
         </div>
         <button className={styles.btnNovo} onClick={() => setModalAberto(true)}>
           + Nova Movimentação
