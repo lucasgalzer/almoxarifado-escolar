@@ -15,7 +15,6 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
   const [form, setForm] = useState({
     codigo_interno: '',
     pessoa_id: '',
-    data_devolucao_prevista: '',
     observacoes: '',
   })
 
@@ -23,7 +22,6 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
     api.get('/pessoas', { params: { ativo: true } })
       .then(({ data }) => setPessoas(data))
       .catch(console.error)
-
     setTimeout(() => codigoRef.current?.focus(), 100)
   }, [])
 
@@ -37,32 +35,32 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
   }
 
   async function handleBuscarProduto() {
-  if (!form.codigo_interno.trim()) return
-  setBuscandoProduto(true)
-  setProdutoEncontrado(null)
-  setErro('')
-  try {
-    const { data } = await api.get('/produtos')
-    const produto = data.find(p => 
-      p.codigo_interno.toLowerCase() === form.codigo_interno.trim().toLowerCase()
-    )
-    if (!produto) {
-      setErro(`Produto "${form.codigo_interno}" não encontrado`)
-    } else if (produto.tipo !== 'reutilizavel') {
-      setErro(`"${produto.nome}" é consumível e não pode ser emprestado`)
-    } else if (produto.status !== 'disponivel') {
-      setErro(`"${produto.nome}" está ${produto.status}`)
-    } else if (produto.quantidade_atual <= 0) {
-      setErro(`"${produto.nome}" não tem estoque disponível`)
-    } else {
-      setProdutoEncontrado(produto)
+    if (!form.codigo_interno.trim()) return
+    setBuscandoProduto(true)
+    setProdutoEncontrado(null)
+    setErro('')
+    try {
+      const { data } = await api.get('/produtos', { params: { por_pagina: 'todos' } })
+      const produto = data.dados.find(p =>
+        p.codigo_interno.toLowerCase() === form.codigo_interno.trim().toLowerCase()
+      )
+      if (!produto) {
+        setErro(`Produto "${form.codigo_interno}" não encontrado`)
+      } else if (produto.tipo !== 'reutilizavel') {
+        setErro(`"${produto.nome}" é consumível e não pode ser emprestado`)
+      } else if (produto.status !== 'disponivel') {
+        setErro(`"${produto.nome}" está ${produto.status}`)
+      } else if (produto.quantidade_atual <= 0) {
+        setErro(`"${produto.nome}" não tem estoque disponível`)
+      } else {
+        setProdutoEncontrado(produto)
+      }
+    } catch {
+      setErro('Erro ao buscar produto')
+    } finally {
+      setBuscandoProduto(false)
     }
-  } catch {
-    setErro('Erro ao buscar produto')
-  } finally {
-    setBuscandoProduto(false)
   }
-}
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -76,7 +74,6 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
       await api.post('/emprestimos', {
         produto_id: produtoEncontrado.id,
         pessoa_id: form.pessoa_id,
-        data_devolucao_prevista: form.data_devolucao_prevista || null,
         observacoes: form.observacoes,
       })
       addToast('Empréstimo registrado com sucesso!', 'sucesso')
@@ -136,14 +133,7 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
           </div>
 
           {produtoEncontrado && (
-            <div style={{
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: 'var(--radius-md)',
-              padding: '12px 14px',
-              fontSize: '13px',
-              color: '#15803d'
-            }}>
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: '13px', color: '#15803d' }}>
               <strong>{produtoEncontrado.nome}</strong> — {produtoEncontrado.codigo_interno}
               <br />
               <span style={{ fontSize: '12px' }}>
@@ -166,16 +156,6 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
           </div>
 
           <div className={styles.campo}>
-            <label>Data de devolução prevista</label>
-            <input
-              type="datetime-local"
-              name="data_devolucao_prevista"
-              value={form.data_devolucao_prevista}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className={styles.campo}>
             <label>Observações</label>
             <textarea
               name="observacoes"
@@ -184,6 +164,10 @@ function ModalEmprestimo({ onFechar, onSalvar }) {
               rows={2}
               placeholder="Ex: Retirado para aula de artes — turma 6A"
             />
+          </div>
+
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '10px 14px', fontSize: '12px', color: '#92400e' }}>
+            O solicitante receberá um e-mail de lembrete no dia seguinte caso não devolva o item.
           </div>
 
           <div className={styles.acoes}>

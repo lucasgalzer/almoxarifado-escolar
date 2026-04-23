@@ -81,13 +81,13 @@ function Configuracoes() {
   }
 
   async function carregarProdutos() {
-    try {
-      const { data } = await api.get('/produtos')
-      setProdutos(data)
-    } catch (error) {
-      console.error(error)
-    }
+  try {
+    const { data } = await api.get('/produtos', { params: { por_pagina: 'todos' } })
+    setProdutos(data.dados)
+  } catch (error) {
+    console.error(error)
   }
+}
 
   async function carregarLogs() {
     try {
