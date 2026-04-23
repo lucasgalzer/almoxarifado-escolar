@@ -15,6 +15,7 @@ import Usuarios from './pages/Usuarios'
 import Solicitante from './pages/Solicitante'
 import SuperAdmin from './pages/SuperAdmin'
 import useAuth from './hooks/useAuth'
+import EmprestimosFixos from './pages/EmprestimosFixos'
 
 function RedirecionarPorPerfil() {
   const { usuario } = useAuth()
@@ -58,6 +59,7 @@ function App() {
           <Route path="relatorios" element={<Relatorios />} />
           <Route path="configuracoes" element={<Configuracoes />} />
           <Route path="usuarios" element={<Usuarios />} />
+          <Route path="emprestimos-fixos" element={<EmprestimosFixos />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" />} />

@@ -23,6 +23,7 @@ const usuariosRoutes = require('./routes/usuarios')
 const instituicaoRoutes = require('./routes/instituicao')
 const superAdminRoutes = require('./routes/superAdmin')
 const { iniciarJobs } = require('./services/jobs')
+const emprestimosFixosRoutes = require('./routes/emprestimosFixos')
 
 const app = express()
 
@@ -61,6 +62,7 @@ app.use('/audit-log', auditLogRoutes)
 app.use('/usuarios', usuariosRoutes)
 app.use('/instituicao', instituicaoRoutes)
 app.use('/super-admin', superAdminRoutes)
+app.use('/emprestimos-fixos', emprestimosFixosRoutes)
 
 app.use(rotaNaoEncontrada)
 app.use(tratarErros)

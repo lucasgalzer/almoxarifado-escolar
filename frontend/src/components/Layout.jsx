@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Users, Archive,
-  ArrowLeftRight, ClipboardList, Wrench,
+  ArrowLeftRight, ClipboardList, Wrench,BookMarked, 
   BarChart2, Settings, LogOut, Menu, X, Box, UserCog
 } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
@@ -15,6 +15,7 @@ const menuItems = [
   { path: '/pessoas',       label: 'Pessoas',        icon: Users,           perfis: ['admin', 'operador'] },
   { path: '/estoque',       label: 'Estoque',        icon: Archive,         perfis: ['admin', 'operador'] },
   { path: '/emprestimos',   label: 'Empréstimos',    icon: ArrowLeftRight,  perfis: ['admin', 'operador'] },
+  { path: '/emprestimos-fixos', label: 'Empréstimos Fixos', icon: BookMarked, perfis: ['admin', 'operador'] },
   { path: '/solicitacoes',  label: 'Solicitações',   icon: ClipboardList,   perfis: ['admin', 'operador'] },
   { path: '/manutencao',    label: 'Manutenção',     icon: Wrench,          perfis: ['admin', 'operador'] },
   { path: '/relatorios',    label: 'Relatórios',     icon: BarChart2,       perfis: ['admin', 'operador'] },
