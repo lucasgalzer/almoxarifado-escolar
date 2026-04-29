@@ -28,18 +28,18 @@ async function login(req, res) {
       ultimo_login: new Date()
     })
 
-    const token = jwt.sign(
-      {
-        id: usuario.id,
-        email: usuario.email,
-        perfil: usuario.perfil,
-        instituicao_id: usuario.instituicao_id,
-        super_admin: usuario.super_admin,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    )
-
+  const token = jwt.sign(
+  {
+    id: usuario.id,
+    nome: usuario.nome,
+    email: usuario.email,
+    perfil: usuario.perfil,
+    instituicao_id: usuario.instituicao_id,
+    super_admin: usuario.super_admin,
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRES_IN }
+)
     return res.json({
       token,
       usuario: {

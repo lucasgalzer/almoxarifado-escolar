@@ -18,46 +18,47 @@ function Login() {
   }, [])
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setErro('')
+  e.preventDefault()
+  setErro('')
 
-    if (!email || !senha) {
-      setErro('Preencha o e-mail e a senha')
+  if (!email || !senha) {
+    setErro('Preencha o e-mail e a senha')
+    return
+  }
+
+  setCarregando(true)
+  try {
+    const response = await fetch('http://localhost:3333/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      setErro(data.erro || 'Erro ao fazer login')
       return
     }
 
-    setCarregando(true)
-    try {
-      const response = await fetch('http://localhost:3333/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
-      })
+    // Salva só o token — dados do usuário ficam no JWT
+    localStorage.setItem('token', data.token)
+    localStorage.removeItem('usuario')
+    localStorage.removeItem('usuario_super_admin')
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setErro(data.erro || 'Erro ao fazer login')
-        return
-      }
-
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('usuario', JSON.stringify(data.usuario))
-
-      if (data.usuario.super_admin) {
-        navigate('/super-admin')
-      } else if (data.usuario.perfil === 'solicitante') {
-        navigate('/solicitante')
-      } else {
-        navigate('/dashboard')
-      }
-    } catch {
-      setErro('Não foi possível conectar ao servidor')
-    } finally {
-      setCarregando(false)
+    if (data.usuario.super_admin) {
+      navigate('/super-admin')
+    } else if (data.usuario.perfil === 'solicitante') {
+      navigate('/solicitante')
+    } else {
+      navigate('/dashboard')
     }
+  } catch {
+    setErro('Não foi possível conectar ao servidor')
+  } finally {
+    setCarregando(false)
   }
-
+}
   return (
     <div className={styles.container}>
       <div className={styles.left}>

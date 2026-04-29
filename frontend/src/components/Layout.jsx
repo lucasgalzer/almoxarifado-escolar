@@ -59,14 +59,13 @@ function Layout() {
     navigate('/login')
   }
 
-  function voltarSuperAdmin() {
-    localStorage.setItem('token', localStorage.getItem('token_super_admin'))
-    localStorage.setItem('usuario', localStorage.getItem('usuario_super_admin'))
-    localStorage.removeItem('token_super_admin')
-    localStorage.removeItem('usuario_super_admin')
-    window.location.href = '/super-admin'
-  }
-
+function voltarSuperAdmin() {
+  localStorage.setItem('token', localStorage.getItem('token_super_admin'))
+  localStorage.removeItem('token_super_admin')
+  localStorage.removeItem('usuario')
+  localStorage.removeItem('usuario_super_admin')
+  window.location.href = '/super-admin'
+}
   const itensFiltrados = menuItems.filter(item =>
     item.perfis.includes(usuario?.perfil)
   )

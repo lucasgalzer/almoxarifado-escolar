@@ -119,18 +119,18 @@ function SuperAdmin() {
   }
 
   async function acessarEscola(inst) {
-    try {
-      const { data } = await api.post(`/super-admin/instituicoes/${inst.id}/acessar`)
-      localStorage.setItem('token_super_admin', localStorage.getItem('token'))
-      localStorage.setItem('usuario_super_admin', localStorage.getItem('usuario'))
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('usuario', JSON.stringify(data.usuario))
-      navigate('/dashboard')
-      addToast(`Acessando como ${inst.nome}`, 'sucesso')
-    } catch (error) {
-      addToast(error.response?.data?.erro || 'Erro ao acessar escola', 'erro')
-    }
+  try {
+    const { data } = await api.post(`/super-admin/instituicoes/${inst.id}/acessar`)
+    localStorage.setItem('token_super_admin', localStorage.getItem('token'))
+    localStorage.setItem('token', data.token)
+    localStorage.removeItem('usuario')
+    localStorage.removeItem('usuario_super_admin')
+    navigate('/dashboard')
+    addToast(`Acessando como ${inst.nome}`, 'sucesso')
+  } catch (error) {
+    addToast(error.response?.data?.erro || 'Erro ao acessar escola', 'erro')
   }
+}
 
   function abrirEditar(inst) {
     setModalEditando(inst)
